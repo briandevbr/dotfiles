@@ -540,8 +540,10 @@ if [ -d clone-dotfiles/shell ]; then
     saida=$(atualizar 2>&1 | _t_limpo)
     _t_tem "atualizar baixa e recarrega" "terminal atualizado" "$saida"
     _t_tem "atualizar lista o que mudou" "feat: mudança de teste" "$saida"
+    _t_tem "atualizar: a dica usa a pasta real do repo" "git -C $DOTFILES reset" "$saida"
     printf 'mexi\n' >> "$DOTFILES/zshrc"
     _t_nao "atualizar recusa repo mexido" atualizar
+    _t_tem "atualizar mexido: a dica usa a pasta real" "git -C $DOTFILES diff" "$(atualizar 2>&1 | _t_limpo)"
     ln -sf "$t_rc_antigo" "$HOME/.${T_SHELL}rc"
     DOTFILES="$t_dot_antigo"
 fi

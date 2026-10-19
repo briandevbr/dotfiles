@@ -1091,7 +1091,7 @@ function timebox([string]$min) {
 }
 function atualizar {
     if (-not (Test-Path (Join-Path $Global:DOTFILES '.git'))) { _err "não achei o repositório dotfiles em $(_curto $Global:DOTFILES)" 'instale com: git clone https://github.com/briandevbr/dotfiles $HOME\dotfiles'; return }
-    if (git -C $Global:DOTFILES status --porcelain) { _err 'você mexeu nos dotfiles por aqui e isso não tá no GitHub' 'ver o que mudou: git -C ~/dotfiles diff'; _dica "ajuste pessoal vai em $(_curto $Global:DOTFILES_LOCAL)"; return }
+    if (git -C $Global:DOTFILES status --porcelain) { _err 'você mexeu nos dotfiles por aqui e isso não tá no GitHub' "ver o que mudou: git -C $(_curto $Global:DOTFILES) diff"; _dica "ajuste pessoal vai em $(_curto $Global:DOTFILES_LOCAL)"; return }
     $sw = [Diagnostics.Stopwatch]::StartNew(); $antes = git -C $Global:DOTFILES rev-parse HEAD
     if (-not (_rodar 'procurando atualização' { param($d) git -C $d pull --ff-only -q 2>&1; if ($LASTEXITCODE) { throw 'git pull falhou' } } @($Global:DOTFILES) -Quieto)) { _dica 'tá sem internet?'; return }
     $depois = git -C $Global:DOTFILES rev-parse HEAD

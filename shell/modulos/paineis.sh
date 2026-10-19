@@ -458,7 +458,7 @@ _dev_secao() {
         terminal)
             _secao "este terminal"
             _linha "atualizar"     "baixa a versão nova deste terminal (GitHub) e já recarrega"
-            _eq    "git -C ~/dotfiles pull && source ~/.bashrc"
+            _eq    "git -C $(_curto "$DOTFILES") pull && source ~/.${_SHELL}rc"
             _linha "dotfiles"      "check-up: o que está instalado e o que falta"
             _linha "dotfiles tempo" "quanto o terminal leva pra abrir"
             _linha "dotfiles perfil" "quanto cada módulo leva pra carregar"
@@ -849,7 +849,7 @@ _dotfiles_doctor() {
         _ok "tudo instalado" "o terminal está completo"
     else
         _aviso "$(_plural "$falta" "ferramenta opcional faltando" "ferramentas opcionais faltando")" \
-            "tudo funciona sem elas — só fica mais simples. Instala tudo: ~/dotfiles/install.sh --ferramentas"
+            "tudo funciona sem elas — só fica mais simples. Instala tudo: $(_curto "$DOTFILES")/install.sh --ferramentas"
     fi
 }
 

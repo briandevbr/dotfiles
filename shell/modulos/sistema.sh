@@ -393,24 +393,25 @@ _rc_do_shell() {
 
 # atualizar - baixa a versão mais nova do teu terminal (repo dotfiles no GitHub),
 # recarrega na hora e mostra o que mudou. Não precisa abrir outro terminal.
-# Por baixo: git -C ~/dotfiles pull && source ~/.bashrc
+# Por baixo: git -C <pasta do repo> pull && source ~/.bashrc
 atualizar() {
     if [ ! -d "$DOTFILES/.git" ]; then
         _err "não achei o repositório dotfiles em $(_curto "$DOTFILES")" \
              "instale com: git clone https://github.com/briandevbr/dotfiles ~/dotfiles"
         return 1
     fi
-    local rc rc_repo
+    local rc rc_repo repo
     read -r rc rc_repo <<< "$(_rc_do_shell)"
+    repo=$(_curto "$DOTFILES")     # nas dicas: o repo pode estar em qualquer pasta, não só ~/dotfiles
     # O ~/.bashrc (ou ~/.zshrc) tem que ser um atalho pro do repo, senão a atualização não chega nele
     if [ "$(_caminho_real "$rc")" != "$(_caminho_real "$rc_repo")" ]; then
         _err "teu $(_curto "$rc") não tá ligado ao repositório" \
-             "ligue uma vez só: ln -sf $(_curto "$rc_repo") $(_curto "$rc")  (ou rode ~/dotfiles/install.sh)"
+             "ligue uma vez só: ln -sf $(_curto "$rc_repo") $(_curto "$rc")  (ou rode $repo/install.sh)"
         return 1
     fi
     if [ -n "$(git -C "$DOTFILES" status --porcelain 2> /dev/null)" ]; then
         _err "você mexeu nos dotfiles por aqui e isso não tá no GitHub" \
-             "ver o que mudou: git -C ~/dotfiles diff  ·  descartar: git -C ~/dotfiles restore ."
+             "ver o que mudou: git -C $repo diff  ·  descartar: git -C $repo restore ."
         _dica "ajuste pessoal vai em $(_curto "$DOTFILES_LOCAL") — lá o atualizar nunca mexe"
         return 1
     fi
@@ -419,7 +420,7 @@ atualizar() {
     _us t0
     antes=$(git -C "$DOTFILES" rev-parse HEAD)
     if ! _rodar -q "procurando atualização" git -C "$DOTFILES" pull --ff-only -q; then
-        _dica "tá sem internet? Se repetir, rode: git -C ~/dotfiles pull"
+        _dica "tá sem internet? Se repetir, rode: git -C $repo pull"
         return 1
     fi
     depois=$(git -C "$DOTFILES" rev-parse HEAD)
@@ -442,7 +443,7 @@ atualizar() {
     while IFS= read -r msg; do
         printf "     ${C_DIM}•${C_OFF} ${C_TEXT}%s${C_OFF}\n" "$msg"
     done < <(git -C "$DOTFILES" log --format='%s' "$antes..$depois")
-    _dica "deu ruim? volta pra anterior: git -C ~/dotfiles reset --hard ${antes:0:7} && source $(_curto "$rc")"
+    _dica "deu ruim? volta pra anterior: git -C $repo reset --hard ${antes:0:7} && source $(_curto "$rc")"
 }
 
 # tela on|off — liga/desliga a tela do notebook (eDP-1) pelo cosmic-randr
