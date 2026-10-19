@@ -526,6 +526,10 @@ _t_secao "atualizar (repositório de mentira)"
 # ==========================================
 builtin cd "$T_SANDBOX" || exit 1
 git clone -q --no-local "$T_RAIZ" origem-dotfiles.git --bare 2> /dev/null || git clone -q --bare "$T_RAIZ" origem-dotfiles.git
+# No CI de pull request o checkout é um commit solto, sem branch nenhuma: o clone herdaria isso
+# e o pull não saberia de onde puxar. Uma main de verdade, no mesmo commit, resolve.
+git -C origem-dotfiles.git update-ref refs/heads/main "$(git -C "$T_RAIZ" rev-parse HEAD)" &&
+    git -C origem-dotfiles.git symbolic-ref HEAD refs/heads/main
 git clone -q origem-dotfiles.git clone-dotfiles 2> /dev/null
 ( builtin cd clone-dotfiles && git status --porcelain | head -1 ) > /dev/null
 if [ -d clone-dotfiles/shell ]; then
