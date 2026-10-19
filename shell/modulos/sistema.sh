@@ -409,9 +409,18 @@ atualizar() {
              "ligue uma vez só: ln -sf $(_curto "$rc_repo") $(_curto "$rc")  (ou rode $repo/install.sh)"
         return 1
     fi
-    if [ -n "$(git -C "$DOTFILES" status --porcelain 2> /dev/null)" ]; then
-        _err "você mexeu nos dotfiles por aqui e isso não tá no GitHub" \
-             "ver o que mudou: git -C $repo diff  ·  descartar: git -C $repo restore ."
+    # Só trava com mudança em arquivo do repo. Arquivo novo solto (uma pasta .vscode/,
+    # .idea/…) não se perde no pull; se ele atrapalhar, o próprio git recusa e explica.
+    local mexidos linha n=0
+    mexidos=$(git -C "$DOTFILES" status --porcelain --untracked-files=no 2> /dev/null)
+    if [ -n "$mexidos" ]; then
+        _err "você mexeu nos dotfiles por aqui e isso não tá no GitHub"
+        while IFS= read -r linha; do
+            n=$(( n + 1 ))
+            if [ "$n" -le 5 ]; then printf "     ${C_DIM}│${C_OFF} %s\n" "${linha:3}" >&2; fi
+        done <<< "$mexidos"
+        if [ "$n" -gt 5 ]; then printf "     ${C_DIM}│ … e mais %s${C_OFF}\n" $(( n - 5 )) >&2; fi
+        _dica "ver o que mudou: git -C $repo diff  ·  descartar: git -C $repo restore ."
         _dica "ajuste pessoal vai em $(_curto "$DOTFILES_LOCAL") — lá o atualizar nunca mexe"
         return 1
     fi

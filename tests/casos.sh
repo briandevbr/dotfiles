@@ -533,8 +533,9 @@ if [ -d clone-dotfiles/shell ]; then
     DOTFILES="$T_SANDBOX/clone-dotfiles"
     t_rc_antigo=$(_caminho_real "$HOME/.${T_SHELL}rc")
     ln -sf "$DOTFILES/${T_SHELL}rc" "$HOME/.${T_SHELL}rc"
+    mkdir -p "$DOTFILES/.vscode" && : > "$DOTFILES/.vscode/settings.json"   # arquivo novo solto não trava
     saida=$(atualizar 2>&1 | _t_limpo)
-    _t_tem "atualizar sem novidade" "já tá na versão mais nova" "$saida"
+    _t_tem "atualizar sem novidade (com arquivo novo solto no repo)" "já tá na versão mais nova" "$saida"
     ( builtin cd "$T_SANDBOX" && git clone -q origem-dotfiles.git autor && builtin cd autor &&
       printf '\n# teste\n' >> shell/50-atalhos.sh && git commit -qam "feat: mudança de teste" && git push -q 2> /dev/null )
     saida=$(atualizar 2>&1 | _t_limpo)
@@ -543,7 +544,9 @@ if [ -d clone-dotfiles/shell ]; then
     _t_tem "atualizar: a dica usa a pasta real do repo" "git -C $DOTFILES reset" "$saida"
     printf 'mexi\n' >> "$DOTFILES/zshrc"
     _t_nao "atualizar recusa repo mexido" atualizar
-    _t_tem "atualizar mexido: a dica usa a pasta real" "git -C $DOTFILES diff" "$(atualizar 2>&1 | _t_limpo)"
+    saida=$(atualizar 2>&1 | _t_limpo)
+    _t_tem "atualizar mexido: a dica usa a pasta real" "git -C $DOTFILES diff" "$saida"
+    _t_tem "atualizar mexido: mostra o arquivo mexido" "│ zshrc" "$saida"
     ln -sf "$t_rc_antigo" "$HOME/.${T_SHELL}rc"
     DOTFILES="$t_dot_antigo"
 fi
