@@ -772,7 +772,11 @@ function gclean {
     $bs = @(git branch --merged | Where-Object { $_ -notmatch '^\*|^\+' } | ForEach-Object { $_.Trim() } | Where-Object { $_ -notin 'main', 'master', 'develop' })
     if (-not $bs) { _ok 'nada pra limpar' 'nenhuma branch mergeada sobrando'; return }
     _titulo '🧹' 'branches já mergeadas'; $bs | ForEach-Object { _w "     $C_DIM•$C_OFF $C_TEXT$_$C_OFF`n" }
-    if (_confirma "apagar $(_plural $bs.Count branch branches)?") { $bs | ForEach-Object { git branch -d $_ *> $null }; _ok (_plural $bs.Count 'branch apagada' 'branches apagadas') } else { _cancelado }
+    if (-not (_confirma "apagar $(_plural $bs.Count branch branches)?")) { _cancelado; return }
+    # -D e não -d: a lista veio do --merged, então nada se perde. O -d recusava a branch
+    # com upstream que não contém ela (mesmo mergeada aqui), e o erro sumia
+    $n = 0; foreach ($b in $bs) { if (_git branch -D $b) { $n++ } }
+    if ($n) { _ok (_plural $n 'branch apagada' 'branches apagadas') }
 }
 function gcl([string]$url, [string]$pasta) {
     if (-not $url) { _uso 'gcl <url> [pasta]' 'clona o repositório e já entra nele'; return }

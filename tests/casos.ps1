@@ -145,6 +145,14 @@ $null = _t_saida { gm feature/x }
 _t_eq 'gm' $true (Test-Path f.txt)
 $null = _t_saida { gbd feature/x }
 _t_nao_tem 'gbd' 'feature/x' "$(git branch)"
+# mergeada aqui, mas o upstream no remoto é outra história: o 'git branch -d' recusa essa
+$t_confirma = ${function:_confirma}
+function _confirma { $true }
+git checkout -q -b t-up; Set-Content up.txt 'x'; git add up.txt; git commit -qm up1; git push -q -u origin t-up *> $null
+Add-Content up.txt 'y'; git commit -qam up2; git checkout -q main; git merge -q --no-ff --no-edit t-up
+_t_tem 'gclean conta o que apagou de verdade' '1 branch apagada' (_t_saida { gclean })
+_t_nao_tem 'gclean apaga mergeada com upstream atrasado' 't-up' "$(git branch)"
+${function:_confirma} = $t_confirma
 git remote set-url origin git@github.com:fulano/projeto.git
 _t_eq '_url_remoto' 'https://github.com/fulano/projeto' (_url_remoto)
 Set-Location $sandbox

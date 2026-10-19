@@ -286,6 +286,14 @@ git branch velha-1 && git branch velha-2
 gclean <<< s > /dev/null 2>&1
 _t_nao_tem "gclean apaga as mergeadas" "velha" "$(git branch)"
 _t_eq "gclean não toca na main" "main" "$(git branch --format='%(refname:short)' | grep -x main)"
+# mergeada aqui, mas o upstream no remoto é outra história: o 'git branch -d' recusa essa
+git checkout -qb t-up && printf 'x\n' > up.txt && git add up.txt && git commit -qm up1
+git push -qu origin t-up > /dev/null 2>&1
+printf 'y\n' >> up.txt && git commit -qam up2
+git checkout -q main && git merge -q --no-ff --no-edit t-up
+saida=$(gclean <<< s 2>&1 | _t_limpo)
+_t_nao_tem "gclean apaga mergeada com upstream atrasado" "t-up" "$(git branch)"
+_t_tem "gclean conta o que apagou de verdade" "1 branch apagada" "$saida"
 gp > /dev/null 2>&1
 saida=$(gf 2>&1 | _t_limpo)
 _t_tem "gf em dia" "tudo em dia" "$saida"

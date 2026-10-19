@@ -907,12 +907,20 @@ gclean() {
         printf "     ${C_DIM}•${C_OFF} ${C_TEXT}%s${C_OFF}\n" "$b"
     done <<< "$branches"
 
-    if _confirma "apagar $(_plural "$total" branch branches)?"; then
-        printf '%s\n' "$branches" | xargs git branch -d > /dev/null 2>&1
-        _ok "$(_plural "$total" "branch apagada" "branches apagadas")"
-    else
+    if ! _confirma "apagar $(_plural "$total" branch branches)?"; then
         _cancelado
+        return 0
     fi
+
+    # -D e não -d: a lista veio do --merged, então tudo o que essas branches têm já está
+    # aqui e nada se perde. O -d recusava a branch com upstream que não contém ela (mesmo
+    # mergeada aqui) — e o erro sumia, com o "apagada" aparecendo do mesmo jeito.
+    local apagadas=0 falhou=0
+    while read -r b; do
+        if _git branch -D "$b"; then apagadas=$(( apagadas + 1 )); else falhou=1; fi
+    done <<< "$branches"
+    if [ "$apagadas" -gt 0 ]; then _ok "$(_plural "$apagadas" "branch apagada" "branches apagadas")"; fi
+    return "$falhou"
 }
 
 # gcl - clona e já entra na pasta
