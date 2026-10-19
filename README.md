@@ -8,7 +8,7 @@
 
 [![Stack](https://skillicons.dev/icons?i=bash,linux,git)](#️-tecnologias-usadas)
 
-`Bash · 67 comandos personalizados · licença não especificada`
+`Bash · 67 comandos personalizados · MIT`
 
 </div>
 
@@ -36,6 +36,7 @@ O terminal que eu uso todo dia no Pop!_OS: um `.bashrc` que troca a saída crua 
 | Caminho | Descrição |
 |---|---|
 | `bashrc` | O terminal inteiro (~2.300 linhas, comentadas em português): prompt, paleta de cores, atalhos de git e npm, painéis `dev` e `help`, interface do `gd` e o comando `atualizar`. Vira o `~/.bashrc` por um atalho (symlink) |
+| `LICENSE` | Licença MIT: qualquer pessoa pode usar, copiar e modificar, desde que mantenha o aviso de copyright |
 | `docs/gd.png` | Captura real da interface do `gd`: a lista de arquivos com a prévia do diff e, embaixo, o diff em tela cheia lado a lado |
 | `README.md` | Esta documentação, em português |
 | `README.en.md` | A mesma documentação, em inglês |
@@ -49,6 +50,7 @@ O terminal que eu uso todo dia no Pop!_OS: um `.bashrc` que troca a saída crua 
 ├── 📁 docs
 │  └── 🖼️ gd.png
 ├── ⚙️ bashrc
+├── 🗒️ LICENSE
 ├── 🇺🇸 README.en.md
 └── 🇧🇷 README.md
 ```
@@ -203,7 +205,7 @@ Projeto pessoal — sem processo de contribuição externa no momento. Sugestõe
 
 ## 📄 Licença
 
-Licença não especificada.
+Este projeto está sob a licença [MIT](./LICENSE).
 
 ---
 
