@@ -558,24 +558,49 @@ function gac {
     if ((_git add --all) -and (_git commit -m "$args")) { _feito '◆' 'commit criado'; _resumo_commit }
 }
 $Global:_GCM_TIPOS = 'feat', 'fix', 'docs', 'style', 'refactor', 'perf', 'test', 'build', 'ci', 'chore', 'revert'
+# _gcm_tipo nome 'quando usar' 'exemplo' ['observação'] - uma entrada do painel do gcm
+function _gcm_tipo([string]$nome, [string]$desc, [string]$ex, [string]$obs) {
+    _linha $nome $desc
+    _w "  $(' ' * $Global:_LARG) ${C_DIM}↳ ex.: ${C_TEXT}$ex${C_OFF}`n"
+    if ($obs) { _w "  $(' ' * $Global:_LARG) ${C_DIM}↳ $obs${C_OFF}`n" }
+}
+# _gcm_painel - o 'gcm' sem nada: cada tipo, quando usar e um exemplo (igual ao dev e ao help)
+function _gcm_painel {
+    $Global:_LARG = 10
+    _cabecalho 'CONVENTIONAL COMMITS'
+    _w "  ${C_DIM}↳ formato: ${C_TEXT}tipo(escopo): descrição${C_DIM} · o escopo (opcional) é a parte do projeto${C_OFF}`n"
+    _secao 'tipos'
+    _gcm_tipo 'feat' 'novidade pra quem usa: tela, botão, rota de API, comando, opção' 'feat(login): adiciona entrar com Google'
+    _gcm_tipo 'fix' 'corrige o que tava errado: bug, crash, conta, brecha de segurança' 'fix(carrinho): corrige o total com cupom de desconto'
+    _gcm_tipo 'docs' 'só documentação: README, comentários, guias, exemplos, CHANGELOG' 'docs(readme): explica a instalação no Windows'
+    _gcm_tipo 'style' 'só a forma do código: espaços, indentação, aspas, ponto e vírgula' 'style: formata o projeto com o prettier' 'mudou o visual da tela (CSS)? aí é feat ou fix'
+    _gcm_tipo 'refactor' 'reorganiza sem mudar o que faz: renomeia, divide, move, simplifica' 'refactor(api): separa as rotas em arquivos'
+    _gcm_tipo 'perf' 'mais rápido ou mais leve: cache, menos consultas, menos memória' 'perf(busca): guarda os resultados em cache'
+    _gcm_tipo 'test' 'só testes: cria, corrige ou melhora, sem mexer no código testado' 'test(login): cobre o caso de senha errada'
+    _gcm_tipo 'build' 'como o projeto é montado: dependências, versões, Docker, bundler' 'build: atualiza o react para a versão 19'
+    _gcm_tipo 'ci' 'a automação de cada push: GitHub Actions, pipelines, deploy' 'ci: roda os testes também no macOS'
+    _gcm_tipo 'chore' 'manutenção que não entra nas outras: .gitignore, configs, scripts' 'chore: ignora a pasta dist no git' 'na dúvida entre chore e outro tipo, use o outro'
+    _gcm_tipo 'revert' 'desfaz um commit anterior: diga na descrição qual foi' 'revert: desfaz "feat(login): adiciona botão"'
+    _secao 'como usar'
+    $Global:_LARG = 30
+    _linha 'gcm fix corrige o frete' '→ fix: corrige o frete'
+    _linha 'gcm feat:login adiciona botão' '→ feat(login): adiciona botão'
+    _linha 'gcm feat:api! muda as rotas' '→ feat(api)!: muda as rotas'
+    _w "`n"
+    _dica 'o ! avisa que quebra compatibilidade: quem usa vai precisar mudar algo'
+    _dica 'antes, ponha os arquivos no stage com ga ou gaa · aspas são opcionais'
+    _dica 'mudou coisas de tipos diferentes? faça um commit pra cada'
+    _w "`n"
+}
 function gcm {
+    if (-not $args) { _gcm_painel; return }
     if (-not (_em_repo_git)) { return }
     git diff --cached --quiet; if ($LASTEXITCODE -eq 0) { _err 'nada no stage pra commitar' 'use ga <arquivo> ou gaa antes'; return }
-    if ($args) { $cab = "$($args[0])".TrimEnd(':'); $desc = ($args | Select-Object -Skip 1) -join ' ' }
-    else {
-        $i = 0; foreach ($t in $Global:_GCM_TIPOS) { $i++; _w ("  $C_CMD{0,2}$C_OFF  $C_TEXT{1}$C_OFF`n" -f $i, $t) }
-        $r = Read-Host '  número do tipo'
-        if ($r -notmatch '^\d+$' -or [int]$r -lt 1 -or [int]$r -gt $Global:_GCM_TIPOS.Count) { _cancelado; return }
-        $cab = $Global:_GCM_TIPOS[[int]$r - 1]; $desc = ''
-    }
+    $cab = "$($args[0])".TrimEnd(':'); $desc = ($args | Select-Object -Skip 1) -join ' '
     if ($cab -notmatch '^([a-z]+)(\(([^)]+)\)|:([^!]+))?(!)?$') { _err "tipo inválido: $cab" 'use tipo ou tipo:escopo — ex.: gcm feat:login adiciona botão'; return }
     $tipo = $Matches[1]; $escopo = if ($Matches[3]) { $Matches[3] } else { $Matches[4] }; $quebra = $Matches[5]
     if ($Global:_GCM_TIPOS -notcontains $tipo) { _err "'$tipo' não é um tipo do Conventional Commits" "tipos: $($Global:_GCM_TIPOS -join ' ')"; return }
-    if (-not $desc) {
-        if (-not $escopo) { $escopo = Read-Host '  escopo (opcional, Enter pula)' }
-        $desc = Read-Host '  descrição'
-    }
-    if (-not $desc) { _err 'falta a descrição do commit'; return }
+    if (-not $desc) { _err 'falta a descrição do commit' "ex.: gcm $cab adiciona botão de login"; return }
     $msg = $tipo + $(if ($escopo) { "($escopo)" } else { '' }) + $quebra + ": $desc"
     if (_git commit -m $msg) { _feito '◆' 'commit criado'; _resumo_commit }
 }
@@ -747,7 +772,11 @@ function gclean {
     $bs = @(git branch --merged | Where-Object { $_ -notmatch '^\*|^\+' } | ForEach-Object { $_.Trim() } | Where-Object { $_ -notin 'main', 'master', 'develop' })
     if (-not $bs) { _ok 'nada pra limpar' 'nenhuma branch mergeada sobrando'; return }
     _titulo '🧹' 'branches já mergeadas'; $bs | ForEach-Object { _w "     $C_DIM•$C_OFF $C_TEXT$_$C_OFF`n" }
-    if (_confirma "apagar $(_plural $bs.Count branch branches)?") { $bs | ForEach-Object { git branch -d $_ *> $null }; _ok (_plural $bs.Count 'branch apagada' 'branches apagadas') } else { _cancelado }
+    if (-not (_confirma "apagar $(_plural $bs.Count branch branches)?")) { _cancelado; return }
+    # -D e não -d: a lista veio do --merged, então nada se perde. O -d recusava a branch
+    # com upstream que não contém ela (mesmo mergeada aqui), e o erro sumia
+    $n = 0; foreach ($b in $bs) { if (_git branch -D $b) { $n++ } }
+    if ($n) { _ok (_plural $n 'branch apagada' 'branches apagadas') }
 }
 function gcl([string]$url, [string]$pasta) {
     if (-not $url) { _uso 'gcl <url> [pasta]' 'clona o repositório e já entra nele'; return }
@@ -1187,7 +1216,7 @@ function _dev_secao([string]$s) {
         'arquivos' { _secao 'arquivos'; _linha 'ff [texto]' 'busca arquivo (fzf) ou texto dentro deles'; _linha 'extract arq' 'descompacta zip, tar.gz, 7z…'; _linha 'compactar x' 'pasta vira x.zip (ou tar.gz)'; _eq 'Compress-Archive'; _linha 'bak arq' 'cópia ao lado com data e hora'; _linha 'lixo arq' 'manda pra Lixeira (recuperável)'; _linha 'espaco' 'o que mais ocupa espaço na pasta' }
         'util' { _secao 'utilitários'; _linha 'clip / colar' 'copia / cola da área de transferência'; _eq 'Set-Clipboard · Get-Clipboard'; _linha 'json arq' 'formata JSON'; _linha 'uuid' 'gera um UUID e copia'; _linha 'senha [n]' 'senha forte e copia'; _linha 'b64 / b64d' 'base64'; _linha 'epoch [ts]' 'timestamp ↔ data'; _linha 'calc expr' 'calculadora'; _linha 'loadenv' 'carrega o .env'; _linha 'venv' 'ativa/cria o .venv do Python'; _linha 'cheat cmd' 'exemplos de um comando' }
         'dev' { _secao 'dev'; _linha 'serve [porta]' 'site local da pasta (padrão 8000)'; _linha 'port N' 'quem usa a porta N (-k encerra)'; _eq 'Get-NetTCPConnection -LocalPort N'; _linha 'portas' 'todas as portas abertas'; _linha 'waitport N' 'espera a porta abrir'; _linha 'httpcheck url' 'código HTTP e tempo'; _linha 'timebox [min]' "cronômetro de foco (padrão $Global:TIMEBOX_MIN min)"; _linha 'status' 'painel do ambiente' }
-        'git' { _secao 'git'; _linha 'gs · gl · gd · gds' 'status · histórico · diff · diff do stage'; _linha 'ga · gaa' 'põe no stage (um · tudo)'; _linha 'gc msg · gac msg' 'commit · add tudo + commit'; _linha 'gcm tipo:esc msg' 'commit no padrão Conventional Commits'; _linha 'gamend · gundo' 'emenda o último · desfaz o último'; _linha 'gwip · gunwip' 'commit provisório · desfaz'; _linha 'grst · grs' 'tira do stage · descarta mudança'; _linha 'gst · gstp · gsl' 'stash: guarda · recupera · lista'; _linha 'gp · gpl · gf · gup' 'push · pull · fetch · atualiza a main'; _linha 'gco · gcb · gnew · gbr' 'troca · cria · cria e publica · recentes'; _linha 'gin · gm · gbd · gclean' 'o que entra · merge · apaga · limpa mergeadas'; _linha 'gcl · hub · gpr' 'clona · abre no GitHub · abre o PR' }
+        'git' { _secao 'git'; _linha 'gs · gl · gd · gds' 'status · histórico · diff · diff do stage'; _linha 'ga · gaa' 'põe no stage (um · tudo)'; _linha 'gc msg · gac msg' 'commit · add tudo + commit'; _linha 'gcm' 'os tipos do Conventional Commits: quando usar cada um'; _linha 'gcm tipo:esc msg' 'commit no padrão Conventional Commits'; _linha 'gamend · gundo' 'emenda o último · desfaz o último'; _linha 'gwip · gunwip' 'commit provisório · desfaz'; _linha 'grst · grs' 'tira do stage · descarta mudança'; _linha 'gst · gstp · gsl' 'stash: guarda · recupera · lista'; _linha 'gp · gpl · gf · gup' 'push · pull · fetch · atualiza a main'; _linha 'gco · gcb · gnew · gbr' 'troca · cria · cria e publica · recentes'; _linha 'gin · gm · gbd · gclean' 'o que entra · merge · apaga · limpa mergeadas'; _linha 'gcl · hub · gpr' 'clona · abre no GitHub · abre o PR' }
         'node' { _secao 'node'; _linha 'npkg' 'package.json base'; _linha 'ni [pacote]' 'instala'; _linha 'nid pacote' 'instala só pra dev'; _linha 'nr · nrd · nrb · ns · nt' 'run · dev · build · start · test'; _linha 'nfresh · nout' 'reinstala do zero · desatualizados' }
         'docker' { _secao 'docker'; _linha 'dps · dpsa · dimg' 'rodando · todos · imagens'; _linha 'dlog · dsh' 'logs ao vivo · terminal dentro'; _linha 'dstop · drm · dclean' 'para · apaga · faxina'; _linha 'dc · dcu · dcd · dcl' 'compose · up · down · logs'; _linha 'dstats' 'CPU e memória de cada container' }
         'rede' { _secao 'rede'; _linha 'rede' 'diagnóstico: DNS, internet, latência'; _linha 'meuip' 'IP local e público'; _linha 'portas · httpcheck' 'portas abertas · teste de URL' }

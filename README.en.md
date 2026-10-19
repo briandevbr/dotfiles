@@ -134,7 +134,7 @@ In a regular terminal you have to memorize long commands, and the answers come i
 ### Why it beats the default terminal
 
 - **Interface** — answers use the same colors as the prompt: green ✓ when it worked, red ✗ when it didn't, with a hint on how to fix it right below. Slow operations show a spinner with a running timer; cleanup and upgrades show a progress bar per step. The prompt shows the time, the folder, the git branch, warns you when the last command failed and how long a slow command took (`⏱ 12s`). In several commands, if you don't type a file, branch or container name, a searchable list with preview opens.
-- **Productivity** — short shortcuts do the work of long commands: `gac "message"` does the same as `git add --all && git commit -m "message"`, and `gcm feat:login adds button` builds the commit in the Conventional Commits format. Swapped letters by accident, like `gti`? It suggests the right command. And `atualizar` brings the terminal to its newest version with a single word.
+- **Productivity** — short shortcuts do the work of long commands: `gac "message"` does the same as `git add --all && git commit -m "message"`, and `gcm feat:login adds button` builds the commit in the Conventional Commits format (on its own, `gcm` shows each type, when to use it and an example). Swapped letters by accident, like `gti`? It suggests the right command. And `atualizar` brings the terminal to its newest version with a single word.
 - **Performance** — the terminal opens in ~21ms on bash and ~14ms on zsh (the old `bashrc` took ~29ms, with half the commands). Commands are only read the first time you use one of them, the prompt reads the branch without starting git, and the tools don't run on every terminal: their `init` output is cached.
 - **Safety** — `poweroff`, `reboot` and `suspend` first check what could be lost (running programs, projects with changes outside git, an installation in progress), ask, save a log and still give you a 5-second countdown that Ctrl+C cancels. `clean -n` shows how much can be freed without deleting anything.
 
@@ -247,9 +247,9 @@ pwsh -NoProfile -File tests/casos.ps1     # PowerShell (on Windows: powershell -
 
 | Suite | Cases | What it covers |
 |---|---|---|
-| bash | 246 | helpers, spinner, on-demand loading, navigation and files (compactar → extract round trip), utilities, the whole git flow with a local remote, node, ports with a real HTTP server, docker stopped, `clean`/`upgrade`, power, panels, prompt and `atualizar` with a fake repository |
-| zsh | 245 | the same cases (except `help cd`, which is bash-only) |
-| PowerShell | 81 | the Windows profile: helpers, files, git, node, power, panels |
+| bash | 251 | helpers, spinner, on-demand loading, navigation and files (compactar → extract round trip), utilities, the whole git flow with a local remote, node, ports with a real HTTP server, docker stopped, `clean`/`upgrade`, power, panels, prompt and `atualizar` with a fake repository |
+| zsh | 250 | the same cases (except `help cd`, which is bash-only) |
+| PowerShell | 85 | the Windows profile: helpers, files, git, node, power, panels |
 
 Each shell runs in a throwaway HOME and the dangerous commands (`sudo`, `systemctl`, `shutdown`, `apt`…) are stubs that only log the call: the tests never power off or install anything. On [GitHub Actions](https://docs.github.com/actions) the suite runs on every push on Linux (with and without the optional tools), macOS (zsh and bash 5) and Windows (PowerShell 5.1 and 7), along with [ShellCheck](https://www.shellcheck.net/) and [PSScriptAnalyzer](https://github.com/PowerShell/PSScriptAnalyzer).
 
@@ -336,7 +336,7 @@ To use another name, projects folder or `timebox` length, put it in `~/.config/d
 - [x] Docker, network, process and dev utilities
 - [x] Zsh on Linux and macOS with the same code, PowerShell 5.1/7 on Windows, and WSL
 - [x] Installers you can run as many times as you like
-- [x] 572 tests on bash, zsh and PowerShell, running in CI on Linux, macOS and Windows
+- [x] 586 tests on bash, zsh and PowerShell, running in CI on Linux, macOS and Windows
 
 ---
 

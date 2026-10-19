@@ -134,7 +134,7 @@ Num terminal comum você precisa decorar comandos compridos, e as respostas vêm
 ### Por que é melhor que o terminal padrão
 
 - **Interface** — as respostas usam as mesmas cores do prompt: ✓ verde quando deu certo, ✗ vermelho quando deu errado, e logo abaixo vem a dica de como resolver. Operação demorada mostra um spinner com o tempo correndo; limpeza e atualização mostram a barra de progresso por etapa. O prompt mostra a hora, a pasta, a branch do git, avisa quando o último comando falhou e quanto levou um comando lento (`⏱ 12s`). Em vários comandos, se você não digitar o nome do arquivo, branch ou container, abre uma lista com busca e prévia.
-- **Produtividade** — atalhos curtos fazem o trabalho de comandos longos: `gac "mensagem"` faz o mesmo que `git add --all && git commit -m "mensagem"`, e `gcm feat:login adiciona botão` monta o commit no padrão Conventional Commits. Trocou letras sem querer, tipo `gti`? Ele sugere o comando certo. E o `atualizar` deixa o terminal na versão mais nova com uma palavra só.
+- **Produtividade** — atalhos curtos fazem o trabalho de comandos longos: `gac "mensagem"` faz o mesmo que `git add --all && git commit -m "mensagem"`, e `gcm feat:login adiciona botão` monta o commit no padrão Conventional Commits (sozinho, `gcm` mostra cada tipo, quando usar e um exemplo). Trocou letras sem querer, tipo `gti`? Ele sugere o comando certo. E o `atualizar` deixa o terminal na versão mais nova com uma palavra só.
 - **Desempenho** — o terminal abre em ~21ms no bash e ~14ms no zsh (o `bashrc` antigo levava ~29ms, com metade dos comandos). Os comandos só são lidos na primeira vez que você usa um deles, o prompt lê a branch sem abrir o git e as ferramentas não rodam a cada terminal: o resultado do `init` delas fica em cache.
 - **Segurança** — `poweroff`, `reboot` e `suspend` conferem antes o que pode se perder (programas rodando, projetos com mudanças fora do git, instalação no meio), perguntam, salvam um log e ainda dão 5 segundos de contagem que o Ctrl+C cancela. O `clean -n` mostra quanto dá pra liberar sem apagar nada.
 
@@ -247,9 +247,9 @@ pwsh -NoProfile -File tests/casos.ps1     # PowerShell (no Windows: powershell -
 
 | Suíte | Casos | O que cobre |
 |---|---|---|
-| bash | 246 | helpers, spinner, carregamento sob demanda, navegação e arquivos (compactar → extract ida e volta), utilitários, o fluxo git inteiro com um remoto local, node, portas com um servidor HTTP de verdade, docker parado, `clean`/`upgrade`, energia, painéis, prompt e o `atualizar` com um repositório de mentira |
-| zsh | 245 | os mesmos casos (menos o `help cd`, que é do bash) |
-| PowerShell | 81 | o profile do Windows: helpers, arquivos, git, node, energia, painéis |
+| bash | 251 | helpers, spinner, carregamento sob demanda, navegação e arquivos (compactar → extract ida e volta), utilitários, o fluxo git inteiro com um remoto local, node, portas com um servidor HTTP de verdade, docker parado, `clean`/`upgrade`, energia, painéis, prompt e o `atualizar` com um repositório de mentira |
+| zsh | 250 | os mesmos casos (menos o `help cd`, que é do bash) |
+| PowerShell | 85 | o profile do Windows: helpers, arquivos, git, node, energia, painéis |
 
 Cada shell roda num HOME descartável e os comandos perigosos (`sudo`, `systemctl`, `shutdown`, `apt`…) são stubs que só anotam a chamada: os testes nunca desligam nem instalam nada. No [GitHub Actions](https://docs.github.com/actions) a suíte roda a cada push no Linux (com e sem as ferramentas opcionais), no macOS (zsh e bash 5) e no Windows (PowerShell 5.1 e 7), junto com o [ShellCheck](https://www.shellcheck.net/) e o [PSScriptAnalyzer](https://github.com/PowerShell/PSScriptAnalyzer).
 
@@ -336,7 +336,7 @@ Pra usar com outro nome, a pasta de projetos ou o tempo do `timebox`, coloque em
 - [x] Docker, rede, processos e utilitários de dev
 - [x] Zsh no Linux e no macOS com o mesmo código, PowerShell 5.1/7 no Windows e WSL
 - [x] Instaladores que podem rodar quantas vezes quiser
-- [x] 572 testes em bash, zsh e PowerShell, rodando no CI em Linux, macOS e Windows
+- [x] 586 testes em bash, zsh e PowerShell, rodando no CI em Linux, macOS e Windows
 
 ---
 

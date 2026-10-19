@@ -236,6 +236,12 @@ gcm 'refactor(api)!' muda rota > /dev/null 2>&1
 _t_eq "gcm com parênteses e !" "refactor(api)!: muda rota" "$(git log -1 --format=%s)"
 printf 'seis\n' >> a.txt && git add a.txt
 _t_nao "gcm tipo inválido" gcm bobagem texto
+_t_nao "gcm sem descrição avisa" gcm feat:login
+saida=$(builtin cd / && gcm 2>&1 | _t_limpo)
+t_faltam=""
+for t_t in "${_GCM_TIPOS[@]}"; do [[ "$saida" == *"  $t_t "* ]] || t_faltam+=" $t_t"; done
+_t_eq "gcm sem nada lista os tipos (até fora de um repo)" "" "$t_faltam"
+_t_tem "gcm sem nada dá exemplo de cada um" "ex.: feat(login)" "$saida"
 git reset -q a.txt && git checkout -q -- a.txt
 gundo > /dev/null 2>&1
 _t_eq "gundo desfaz e mantém no stage" "M  a.txt" "$(git status --porcelain | grep a.txt)"
@@ -280,6 +286,14 @@ git branch velha-1 && git branch velha-2
 gclean <<< s > /dev/null 2>&1
 _t_nao_tem "gclean apaga as mergeadas" "velha" "$(git branch)"
 _t_eq "gclean não toca na main" "main" "$(git branch --format='%(refname:short)' | grep -x main)"
+# mergeada aqui, mas o upstream no remoto é outra história: o 'git branch -d' recusa essa
+git checkout -qb t-up && printf 'x\n' > up.txt && git add up.txt && git commit -qm up1
+git push -qu origin t-up > /dev/null 2>&1
+printf 'y\n' >> up.txt && git commit -qam up2
+git checkout -q main && git merge -q --no-ff --no-edit t-up
+saida=$(gclean <<< s 2>&1 | _t_limpo)
+_t_nao_tem "gclean apaga mergeada com upstream atrasado" "t-up" "$(git branch)"
+_t_tem "gclean conta o que apagou de verdade" "1 branch apagada" "$saida"
 gp > /dev/null 2>&1
 saida=$(gf 2>&1 | _t_limpo)
 _t_tem "gf em dia" "tudo em dia" "$saida"

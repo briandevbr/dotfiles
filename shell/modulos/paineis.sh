@@ -287,7 +287,7 @@ _dev_secao() {
             _eq    "git add --all"
             _linha "gc msg"        "salva o que tá no stage num commit (aspas opcionais)"
             _eq    'git commit -m "msg"'
-            _linha "gcm"           "commit no padrão Conventional Commits, guiado por lista"
+            _linha "gcm"           "os tipos do Conventional Commits: quando usar cada um"
             _linha "gcm tipo:esc msg" "direto: gcm feat:login adiciona botão"
             _eq    'git commit -m "feat(login): adiciona botão"'
             _linha "gac msg"       "add de tudo + commit, numa tacada só"

@@ -298,7 +298,7 @@ gac() {
 }
 
 # gcm - commit no padrão Conventional Commits: tipo(escopo): descrição
-#   gcm                              → escolhe o tipo numa lista, pergunta escopo e descrição
+#   gcm                              → painel dos tipos: quando usar cada um, com exemplo
 #   gcm feat:login adiciona botão    → feat(login): adiciona botão  (aspas opcionais)
 #   gcm fix corrige o cálculo        → fix: corrige o cálculo       (sem escopo)
 #   gcm feat:api! muda a rota        → feat(api)!: muda a rota      (! = quebra compatibilidade)
@@ -306,6 +306,10 @@ gac() {
 # ("feat(login)" entre aspas também vale).
 _GCM_TIPOS=(feat fix docs style refactor perf test build ci chore revert)
 gcm() {
+    if [ $# -eq 0 ]; then
+        _gcm_painel
+        return 0
+    fi
     _em_repo_git || return 1
     if git diff --cached --quiet 2> /dev/null; then
         _err "nada no stage pra commitar" "use ga <arquivo> ou gaa antes"
@@ -313,12 +317,8 @@ gcm() {
     fi
 
     local tipo="" escopo="" quebra="" desc="" cab
-    if [ $# -gt 0 ]; then
-        cab="${1%:}"; shift
-        desc="$*"
-    else
-        cab=$(_gcm_escolher_tipo) || { _cancelado; return 0; }
-    fi
+    cab="${1%:}"; shift
+    desc="$*"
 
     # separa tipo, escopo e ! do cabeçalho: "feat:login!" ou "feat(login)!" → feat · login · !
     local formato='^([a-z]+)(\(([^)]+)\)|:([^!]+))?(!)?$'
@@ -335,20 +335,8 @@ gcm() {
         return 1
     fi
 
-    if [ $# -eq 0 ] && [ -z "$desc" ]; then
-        if [ -z "$escopo" ]; then
-            local recentes
-            recentes=$(git log -60 --format=%s 2> /dev/null | sed -nE 's/^[a-z]+\(([^)]+)\).*/\1/p' \
-                | sort | uniq -c | sort -rn | head -5 | awk '{print $2}' | paste -sd' ' -)
-            [ -n "$recentes" ] && _dica "escopos usados aqui: $recentes"
-            printf "  ${C_ACCENT}?${C_OFF}  ${C_TEXT}escopo${C_OFF} ${C_DIM}(opcional, Enter pula)${C_OFF} "
-            read -r escopo
-        fi
-        printf "  ${C_ACCENT}?${C_OFF}  ${C_TEXT}descrição${C_OFF} "
-        read -r desc
-    fi
     if [ -z "$desc" ]; then
-        _err "falta a descrição do commit" "ex.: gcm $tipo${escopo:+:$escopo} adiciona botão de login"
+        _err "falta a descrição do commit" "ex.: gcm $tipo${escopo:+:$escopo}$quebra adiciona botão de login"
         return 1
     fi
 
@@ -357,36 +345,55 @@ gcm() {
     _resumo_commit
 }
 
-# _gcm_escolher_tipo - lista dos tipos com explicação (fzf, ou números sem fzf)
-_gcm_escolher_tipo() {
-    local opcoes="feat      nova funcionalidade
-fix       correção de bug
-docs      só documentação (README, comentários)
-style     formatação, sem mudar a lógica
-refactor  reorganiza o código sem mudar o comportamento
-perf      melhora de desempenho
-test      testes
-build     build ou dependências (package.json…)
-ci        integração contínua (GitHub Actions…)
-chore     manutenção que não entra nas outras
-revert    desfaz um commit anterior"
-    local escolha
-    if _tem fzf && [ -t 1 ]; then
-        escolha=$(printf '%s\n' "$opcoes" | fzf --height=50% --reverse --border=rounded \
-            --prompt='tipo do commit ❯ ' --header='Conventional Commits: tipo(escopo): descrição')
-        [ -z "$escolha" ] && return 1
-        printf '%s' "${escolha%% *}"
-    else
-        local i=0 linha n
-        while IFS= read -r linha; do
-            i=$(( i + 1 ))
-            printf "  ${C_CMD}%2d${C_OFF}  ${C_TEXT}%s${C_OFF}\n" "$i" "$linha" >&2
-        done <<< "$opcoes"
-        printf "  ${C_ACCENT}?${C_OFF}  ${C_TEXT}número do tipo${C_OFF} " >&2
-        read -r n
-        [[ "$n" =~ ^[0-9]+$ ]] && (( n >= 1 && n <= ${#_GCM_TIPOS[@]} )) || return 1
-        printf '%s' "${_GCM_TIPOS[n - 1]}"
-    fi
+# _gcm_painel - o 'gcm' sem nada: cada tipo, quando usar e um exemplo (igual ao dev e ao help)
+_gcm_painel() {
+    local _LARG=10     # largura da coluna de nomes (o _linha e o _gcm_tipo enxergam)
+    _cabecalho "CONVENTIONAL COMMITS"
+    printf "  ${C_DIM}↳ formato: ${C_TEXT}tipo(escopo): descrição${C_DIM} · o escopo (opcional) é a parte do projeto${C_OFF}\n"
+
+    _secao "tipos"
+    _gcm_tipo feat     "novidade pra quem usa: tela, botão, rota de API, comando, opção" \
+                       "feat(login): adiciona entrar com Google"
+    _gcm_tipo fix      "corrige o que tava errado: bug, crash, conta, brecha de segurança" \
+                       "fix(carrinho): corrige o total com cupom de desconto"
+    _gcm_tipo docs     "só documentação: README, comentários, guias, exemplos, CHANGELOG" \
+                       "docs(readme): explica a instalação no Windows"
+    _gcm_tipo style    "só a forma do código: espaços, indentação, aspas, ponto e vírgula" \
+                       "style: formata o projeto com o prettier" \
+                       "mudou o visual da tela (CSS)? aí é feat ou fix"
+    _gcm_tipo refactor "reorganiza sem mudar o que faz: renomeia, divide, move, simplifica" \
+                       "refactor(api): separa as rotas em arquivos"
+    _gcm_tipo perf     "mais rápido ou mais leve: cache, menos consultas, menos memória" \
+                       "perf(busca): guarda os resultados em cache"
+    _gcm_tipo test     "só testes: cria, corrige ou melhora, sem mexer no código testado" \
+                       "test(login): cobre o caso de senha errada"
+    _gcm_tipo build    "como o projeto é montado: dependências, versões, Docker, bundler" \
+                       "build: atualiza o react para a versão 19"
+    _gcm_tipo ci       "a automação de cada push: GitHub Actions, pipelines, deploy" \
+                       "ci: roda os testes também no macOS"
+    _gcm_tipo chore    "manutenção que não entra nas outras: .gitignore, configs, scripts" \
+                       "chore: ignora a pasta dist no git" \
+                       "na dúvida entre chore e outro tipo, use o outro"
+    _gcm_tipo revert   "desfaz um commit anterior: diga na descrição qual foi" \
+                       'revert: desfaz "feat(login): adiciona botão"'
+
+    _secao "como usar"
+    _LARG=30
+    _linha "gcm fix corrige o frete"       "→ fix: corrige o frete"
+    _linha "gcm feat:login adiciona botão" "→ feat(login): adiciona botão"
+    _linha "gcm feat:api! muda as rotas"   "→ feat(api)!: muda as rotas"
+    printf "\n"
+    _dica "o ! avisa que quebra compatibilidade: quem usa vai precisar mudar algo"
+    _dica "antes, ponha os arquivos no stage com ga ou gaa · aspas são opcionais"
+    _dica "mudou coisas de tipos diferentes? faça um commit pra cada"
+    printf "\n"
+}
+
+# _gcm_tipo nome "quando usar" "exemplo" ["observação"] - uma entrada do painel do gcm
+_gcm_tipo() {
+    _linha "$1" "$2"
+    printf "  %*s ${C_DIM}↳ ex.: ${C_TEXT}%s${C_OFF}\n" "$_LARG" "" "$3"
+    if [ -n "${4:-}" ]; then printf "  %*s ${C_DIM}↳ %s${C_OFF}\n" "$_LARG" "" "$4"; fi
 }
 
 # gamend - joga as mudanças atuais no último commit. Com mensagem, troca o texto dele
@@ -900,12 +907,20 @@ gclean() {
         printf "     ${C_DIM}•${C_OFF} ${C_TEXT}%s${C_OFF}\n" "$b"
     done <<< "$branches"
 
-    if _confirma "apagar $(_plural "$total" branch branches)?"; then
-        printf '%s\n' "$branches" | xargs git branch -d > /dev/null 2>&1
-        _ok "$(_plural "$total" "branch apagada" "branches apagadas")"
-    else
+    if ! _confirma "apagar $(_plural "$total" branch branches)?"; then
         _cancelado
+        return 0
     fi
+
+    # -D e não -d: a lista veio do --merged, então tudo o que essas branches têm já está
+    # aqui e nada se perde. O -d recusava a branch com upstream que não contém ela (mesmo
+    # mergeada aqui) — e o erro sumia, com o "apagada" aparecendo do mesmo jeito.
+    local apagadas=0 falhou=0
+    while read -r b; do
+        if _git branch -D "$b"; then apagadas=$(( apagadas + 1 )); else falhou=1; fi
+    done <<< "$branches"
+    if [ "$apagadas" -gt 0 ]; then _ok "$(_plural "$apagadas" "branch apagada" "branches apagadas")"; fi
+    return "$falhou"
 }
 
 # gcl - clona e já entra na pasta
