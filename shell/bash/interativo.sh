@@ -70,7 +70,7 @@ _prompt_hook() {
         fi
         unset _DF_T0
     fi
-    history -a                               # salva o comando na hora: abas novas e o Ctrl+R já enxergam
+    history -a 2> /dev/null                  # salva o comando na hora: abas novas e o Ctrl+R já enxergam
     return "$st"                             # devolve o $? intacto pros próximos hooks
 }
 

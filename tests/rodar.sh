@@ -33,7 +33,9 @@ for sh in "${alvos[@]}"; do
         fi
     fi
 
-    sandbox=$(mktemp -d "${TMPDIR:-/tmp}/dotfiles-teste.XXXXXX")
+    tmp="${TMPDIR:-/tmp}"
+    sandbox=$(mktemp -d "${tmp%/}/dotfiles-teste.XXXXXX")   # o TMPDIR do macOS termina em /
+    sandbox=$(cd -P "$sandbox" && pwd)                       # e /var é atalho pra /private/var
     mkdir -p "$sandbox/home/Documents/projetos" "$sandbox/home/.config/dotfiles"
     ln -s "$RAIZ/bashrc" "$sandbox/home/.bashrc"
     ln -s "$RAIZ/zshrc" "$sandbox/home/.zshrc"
@@ -60,12 +62,18 @@ EOF
            STUB_LOG="$sandbox/stub.log" T_RAIZ="$RAIZ" T_SANDBOX="$sandbox" T_SHELL="$sh")
     if [ "$sh" = bash ]; then
         env -i "${comum[@]}" bash --norc --noprofile -O expand_aliases -c \
-            '. ~/.bashrc > /dev/null && . "$T_RAIZ/tests/casos.sh"'
+            '. ~/.bashrc > /dev/null && . "$T_RAIZ/tests/casos.sh"' < /dev/null &
     else
         env -i "${comum[@]}" zsh -f -c \
-            '. ~/.zshrc > /dev/null && emulate ksh -o bash_rematch -c ". \"\$T_RAIZ/tests/casos.sh\""'
+            '. ~/.zshrc > /dev/null && emulate ksh -o bash_rematch -c ". \"\$T_RAIZ/tests/casos.sh\""' < /dev/null &
     fi
+    # cão de guarda: se um teste travar, a suíte morre em 5 min e diz onde parou
+    pid=$!
+    ( sleep 300; kill "$pid" 2> /dev/null && printf '\n✗ tempo esgotado: travou depois do último teste acima\n' ) &
+    guarda=$!
+    wait "$pid"
     cod=$?
+    kill "$guarda" 2> /dev/null
     [ "$cod" -ne 0 ] && falhou=1
     if [ "$cod" -ne 0 ] && [ -s "$sandbox/saida.log" ]; then
         printf '   (saída dos testes que falharam: %s/saida.log)\n' "$sandbox"
