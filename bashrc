@@ -52,7 +52,7 @@ else
         case "$_df_dest" in /*) _df_src="$_df_dest" ;; *) _df_src="${_df_src%/*}/$_df_dest" ;; esac
     done
     case "$_df_src" in */*) ;; *) _df_src="./$_df_src" ;; esac
-    DOTFILES=$(cd -P -- "${_df_src%/*}" && pwd)
+    DOTFILES=$(builtin cd -P -- "${_df_src%/*}" && pwd)   # builtin: num source, o cd já pode ser o zoxide
 fi
 if [ ! -f "$DOTFILES/shell/00-plataforma.sh" ]; then
     printf '  ✗ não achei a pasta shell/ dos dotfiles (procurei em %s)\n' "$DOTFILES"
