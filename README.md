@@ -25,8 +25,7 @@ O terminal que eu uso todo dia no Pop!_OS: um `.bashrc` que troca a saída crua 
 - [🔄 Como funciona](#-como-funciona)
 - [⚙️ Tecnologias usadas](#️-tecnologias-usadas)
 - [🚀 Como rodar](#-como-rodar)
-- [✨ Funcionalidades](#-funcionalidades)
-- [🤝 Contribuindo](#-contribuindo)
+- [🌍 Pra todo mundo usar](#-pra-todo-mundo-usar)
 - [📄 Licença](#-licença)
 
 ---
@@ -67,9 +66,33 @@ O terminal que eu uso todo dia no Pop!_OS: um `.bashrc` que troca a saída crua 
 
 ## 💻 Uso
 
-Tudo que é personalizado aparece no `dev`, com o comando original embaixo de cada atalho. Os nativos do sistema ficam no `help` (mais de 100, em 14 seções), e `help diff` abre um guia completo do `git diff`.
+Num terminal comum você precisa decorar comandos compridos, e as respostas vêm em inglês e cheias de texto técnico. Às vezes nem vem resposta, e você fica sem saber se deu certo. Aqui cada comando responde em uma linha, em português, dizendo o que aconteceu e o que fazer depois.
 
-Antes de um merge, o `gin` mostra o que vai entrar na branch atual:
+### Por que é melhor que o terminal padrão
+
+- **Interface** — as respostas usam as mesmas cores do prompt: ✓ verde quando deu certo, ✗ vermelho quando deu errado, e logo abaixo vem a dica de como resolver. O prompt mostra a hora, a pasta, a branch do git e avisa quando o último comando falhou. Em vários comandos, se você não digitar o nome do arquivo ou da branch, abre uma lista com busca e prévia pra você escolher.
+- **Produtividade** — atalhos curtos fazem o trabalho de comandos longos: `gac "mensagem"` faz o mesmo que `git add --all && git commit -m "mensagem"`. Trocou letras sem querer, tipo `gti`? Ele sugere o comando certo. E o `atualizar` deixa o terminal na versão mais nova com uma palavra só.
+- **Desempenho** — o terminal abre rápido porque só carrega o que você usa: o Node, por exemplo, só é ligado na primeira vez que você roda um comando dele. Ferramentas mais rápidas que as padrão entram sozinhas se estiverem instaladas: o `fd` nas buscas de arquivo e o `rg` no lugar do `grep` dentro do `ff`. E o `open` abre a pasta sem travar o terminal.
+
+### Esqueceu um comando? Use o `dev` e o `help`
+
+| Comando | O que mostra |
+|---|---|
+| `dev` | Todos os comandos deste terminal, separados por assunto, com o que cada um faz e o comando original que ele roda por baixo. Assim você aprende o git de verdade enquanto usa os atalhos |
+| `help` | Mais de 100 comandos que já vêm no Linux, explicados em português e separados em 14 assuntos (`help rede` mostra só um deles) |
+| `help diff` | Um guia completo do `git diff`, do que ele faz até como ler a resposta dele |
+
+### Na prática
+
+Digitou errado? Ele entende o que você quis dizer:
+
+```text
+$ gti status
+  ✗  gti: comando não encontrado
+     ↳ quis dizer git status?
+```
+
+Antes de juntar o trabalho de outra branch na sua, veja o que vai chegar:
 
 ```text
 $ gin feature/cardapio
@@ -80,25 +103,7 @@ $ gin feature/cardapio
      ↳ ver o código que vem: git diff HEAD...feature/cardapio  ·  trazer: gm feature/cardapio
 ```
 
-O `npkg` cria um `package.json` pronto, com o nome tirado da pasta:
-
-```text
-$ npkg
-  ✓  package.json criado   pizzaria-3-irmaos
-     tipo      módulos com import/export  ("type": "module")
-     scripts   ns → node index.js · nrd → recarrega sozinho · nt → testes
-     ↳ falta o index.js: touch index.js  — depois é só nrd
-```
-
-Comando digitado errado vira sugestão:
-
-```text
-$ gti status
-  ✗  gti: comando não encontrado
-     ↳ quis dizer git status?
-```
-
-E o `atualizar` traz a versão nova do repositório sem precisar abrir outro terminal:
+Melhorias novas chegam com um comando, sem precisar abrir outro terminal:
 
 ```text
 $ atualizar
@@ -182,24 +187,9 @@ Pra usar com outro nome, troque o `[brian]` na linha do `PS1`. A pasta de projet
 
 ---
 
-## ✨ Funcionalidades
+## 🌍 Pra todo mundo usar
 
-- [x] Prompt em duas linhas: hora, pasta, branch e o código do erro quando o último comando falha
-- [x] 28 atalhos de git com resumo em português; quando dá erro, mostra o erro formatado e uma dica do que fazer
-- [x] Interface do `gd`/`gds`: lista de arquivos com prévia e diff em tela cheia, lado a lado quando cabe
-- [x] `gin`: os commits que vão entrar antes de um merge
-- [x] Atalhos de npm que só rodam dentro de um projeto, e o `npkg` pra criar o `package.json`
-- [x] Painéis `dev` (com o comando original de cada atalho) e `help`, mais o guia `help diff`
-- [x] Sugestão pra comando digitado errado e pacote do apt pra comando que não existe
-- [x] `open` e `diario` sem travar o terminal
-- [x] `clean`, `bkp`, `port`, `serve`, `timebox`, `status` e `tela`
-- [x] `atualizar`: baixa a versão nova e recarrega na hora
-
----
-
-## 🤝 Contribuindo
-
-Projeto pessoal — sem processo de contribuição externa no momento. Sugestões são bem-vindas via [issues](https://github.com/briandevbr/dotfiles/issues).
+Este terminal é aberto pra qualquer pessoa: pode instalar, usar e adaptar do teu jeito, sem pedir permissão (licença MIT). Siga o [Como rodar](#-como-rodar), troque o `[brian]` do prompt pelo teu nome e pronto. Achou um problema ou teve uma ideia? Abra uma [issue](https://github.com/briandevbr/dotfiles/issues).
 
 ---
 
@@ -210,5 +200,5 @@ Este projeto está sob a licença [MIT](./LICENSE).
 ---
 
 <div align="center">
-  <sub>Feito por <a href="https://github.com/briandevbr">David Brian</a> · o terminal que eu uso todo dia no Pop!_OS</sub>
+  <sub>Feito por <a href="https://github.com/briandevbr">David Brian</a> · o terminal mais acessível possível, feito pra você</sub>
 </div>

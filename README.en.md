@@ -25,8 +25,7 @@ The terminal I use every day on Pop!_OS: a `.bashrc` that replaces raw command o
 - [🔄 How it works](#-how-it-works)
 - [⚙️ Technologies used](#️-technologies-used)
 - [🚀 How to run](#-how-to-run)
-- [✨ Features](#-features)
-- [🤝 Contributing](#-contributing)
+- [🌍 For everyone](#-for-everyone)
 - [📄 License](#-license)
 
 ---
@@ -67,9 +66,33 @@ The terminal I use every day on Pop!_OS: a `.bashrc` that replaces raw command o
 
 ## 💻 Usage
 
-Everything custom shows up in `dev`, with the original command under each shortcut. Native system commands live in `help` (over 100, in 14 sections), and `help diff` opens a full guide to `git diff`. The interface text is in Portuguese.
+In a regular terminal you have to memorize long commands, and the answers come in dense technical English. Sometimes there's no answer at all, and you're left wondering whether it worked. Here every command answers in one line, in Portuguese, saying what happened and what to do next.
 
-Before a merge, `gin` shows what is about to come into the current branch:
+### Why it beats the default terminal
+
+- **Interface** — answers use the same colors as the prompt: green ✓ when it worked, red ✗ when it didn't, with a hint on how to fix it right below. The prompt shows the time, the folder, the git branch and warns you when the last command failed. In several commands, if you don't type a file or branch name, a searchable list with preview opens so you can pick one.
+- **Productivity** — short shortcuts do the work of long commands: `gac "message"` does the same as `git add --all && git commit -m "message"`. Swapped letters by accident, like `gti`? It suggests the right command. And `atualizar` brings the terminal to its newest version with a single word.
+- **Performance** — the terminal opens fast because it only loads what you use: Node, for example, is only turned on the first time you run one of its commands. Tools faster than the defaults kick in on their own if they're installed: `fd` for file searches and `rg` instead of `grep` inside `ff`. And `open` opens the folder without locking the terminal.
+
+### Forgot a command? Use `dev` and `help`
+
+| Command | What it shows |
+|---|---|
+| `dev` | Every command in this terminal, grouped by topic, with what each one does and the original command it runs underneath. That way you learn real git while using the shortcuts |
+| `help` | Over 100 commands that already come with Linux, explained in Portuguese and split into 14 topics (`help rede` shows just one of them) |
+| `help diff` | A full guide to `git diff`, from what it does to how to read its output |
+
+### In practice (the terminal speaks Portuguese)
+
+Typo? It understands what you meant:
+
+```text
+$ gti status
+  ✗  gti: comando não encontrado
+     ↳ quis dizer git status?
+```
+
+Before bringing another branch's work into yours, see what's coming:
 
 ```text
 $ gin feature/cardapio
@@ -80,25 +103,7 @@ $ gin feature/cardapio
      ↳ ver o código que vem: git diff HEAD...feature/cardapio  ·  trazer: gm feature/cardapio
 ```
 
-`npkg` creates a ready-to-use `package.json`, named after the folder:
-
-```text
-$ npkg
-  ✓  package.json criado   pizzaria-3-irmaos
-     tipo      módulos com import/export  ("type": "module")
-     scripts   ns → node index.js · nrd → recarrega sozinho · nt → testes
-     ↳ falta o index.js: touch index.js  — depois é só nrd
-```
-
-A mistyped command turns into a suggestion:
-
-```text
-$ gti status
-  ✗  gti: comando não encontrado
-     ↳ quis dizer git status?
-```
-
-And `atualizar` brings in the new version from the repository without opening another terminal:
+New improvements arrive with one command, no need to open another terminal:
 
 ```text
 $ atualizar
@@ -182,24 +187,9 @@ To use another name, change `[brian]` in the `PS1` line. The projects folder, th
 
 ---
 
-## ✨ Features
+## 🌍 For everyone
 
-- [x] Two-line prompt: time, folder, branch and the error code when the last command fails
-- [x] 28 git shortcuts with a summary in Portuguese; on errors, the error is formatted with a hint on what to do
-- [x] `gd`/`gds` interface: file list with preview and full-screen diff, side by side when it fits
-- [x] `gin`: the commits that will come in before a merge
-- [x] npm shortcuts that only run inside a project, plus `npkg` to create `package.json`
-- [x] `dev` (with the original command for each shortcut) and `help` panels, plus the `help diff` guide
-- [x] Suggestion for mistyped commands and the apt package for commands that don't exist
-- [x] `open` and `diario` without locking the terminal
-- [x] `clean`, `bkp`, `port`, `serve`, `timebox`, `status` and `tela`
-- [x] `atualizar`: downloads the new version and reloads right away
-
----
-
-## 🤝 Contributing
-
-Personal project — no external contribution process for now. Suggestions are welcome via [issues](https://github.com/briandevbr/dotfiles/issues).
+This terminal is open to anyone: you can install it, use it and adapt it your way, no permission needed (MIT license). Follow [How to run](#-how-to-run), swap the `[brian]` in the prompt for your name and you're done. Found a problem or have an idea? Open an [issue](https://github.com/briandevbr/dotfiles/issues).
 
 ---
 
@@ -210,5 +200,5 @@ This project is under the [MIT](./LICENSE) license.
 ---
 
 <div align="center">
-  <sub>Made by <a href="https://github.com/briandevbr">David Brian</a> · the terminal I use every day on Pop!_OS</sub>
+  <sub>Made by <a href="https://github.com/briandevbr">David Brian</a> · the most accessible terminal possible, made for you</sub>
 </div>
