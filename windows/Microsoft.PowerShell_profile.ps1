@@ -1,4 +1,4 @@
-﻿# ==========================================
+# ==========================================
 # DOTFILES · PROFILE DO POWERSHELL
 # Windows PowerShell 5.1 e PowerShell 7+ (Windows, e também pwsh no Linux/macOS)
 #
@@ -204,8 +204,10 @@ function _contagem([int]$seg, [string]$msg) {
 # gc (Get-Content), gl, gp, gcb, gm, gcm, ni, gin… saem pra dar lugar aos
 # atalhos de git/npm. Os comandos originais continuam: Get-Content, New-Item…
 # ==========================================
+# No Windows PowerShell 5.1 vários deles são AllScope (uma cópia em cada escopo):
+# remove até não sobrar nenhum visível, senão o alias ganha da função.
 foreach ($a in 'gc', 'gl', 'gp', 'gcb', 'gm', 'gcm', 'ni', 'gin', 'gs', 'gd', 'gb', 'gst') {
-    if (Test-Path "Alias:$a") { Remove-Item "Alias:$a" -Force -ErrorAction Ignore }
+    for ($i = 0; $i -lt 5 -and (Test-Path "Alias:$a"); $i++) { Remove-Item "Alias:$a" -Force -ErrorAction Ignore }
 }
 
 # ==========================================
