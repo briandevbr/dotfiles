@@ -94,3 +94,16 @@ jobs:
       - name: Windows PowerShell 5.1
         shell: powershell
         run: .\tests\casos.ps1
+      - name: instalador como no README (sem erro vermelho; o profile acha o repo onde ele está)
+        shell: powershell
+        run: |
+          try { Set-ExecutionPolicy -Scope CurrentUser Undefined -Force -ErrorAction Stop } catch { $null = $_ }
+          foreach ($vez in 1, 2) {
+            $saida = powershell -NoProfile -ExecutionPolicy Bypass -File .\windows\install.ps1 2>&1 | Out-String
+            Write-Output $saida
+            if ($saida -match 'CategoryInfo|FullyQualifiedErrorId|Exception') { Write-Output "erro na $vez vez"; exit 1 }
+          }
+          if ((Get-ExecutionPolicy -Scope CurrentUser) -ne 'RemoteSigned') { Write-Output 'a política não foi gravada'; exit 1 }
+          $dot = powershell -NoLogo -Command 'Write-Output "DOTFILES=$Global:DOTFILES"' | Select-String '^DOTFILES=' | Select-Object -Last 1
+          Write-Output $dot
+          if ("$dot" -ne "DOTFILES=$env:GITHUB_WORKSPACE") { Write-Output "esperava DOTFILES=$env:GITHUB_WORKSPACE"; exit 1 }

@@ -21,7 +21,10 @@ $Global:_DF_T0 = [Diagnostics.Stopwatch]::StartNew()
 # ==========================================
 $Global:DEV_HOME = Join-Path (Join-Path $HOME 'Documents') 'projetos'   # pasta dos projetos
 $Global:TIMEBOX_MIN = 30                                                # timebox padrão (min)
-$Global:DOTFILES = Join-Path $HOME 'dotfiles'                           # o repositório
+$Global:DOTFILES = Join-Path $HOME 'dotfiles'                           # o repositório…
+if ($PSScriptRoot -and (Test-Path (Join-Path $PSScriptRoot '..\.git'))) {   # …ou a pasta onde este arquivo mora,
+    $Global:DOTFILES = Split-Path -Parent $PSScriptRoot                 # se ele foi clonado em outro lugar
+}
 $Global:PROMPT_NOME = 'brian'                                           # o [brian] do prompt
 $Global:DOTFILES_ANIM = if ($env:DOTFILES_ANIM) { $env:DOTFILES_ANIM } else { '1' }          # 0 = sem animação
 $Global:DOTFILES_CONTAGEM = if ($env:DOTFILES_CONTAGEM) { [int]$env:DOTFILES_CONTAGEM } else { 5 }  # contagem antes de desligar
