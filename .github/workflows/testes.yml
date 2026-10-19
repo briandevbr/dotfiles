@@ -15,6 +15,7 @@ jobs:
   lint:
     name: lint (shellcheck · zsh -n · PSScriptAnalyzer)
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
       - name: instala shellcheck e zsh
@@ -35,6 +36,7 @@ jobs:
   linux:
     name: linux · ${{ matrix.perfil }}
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     strategy:
       fail-fast: false
       matrix:
@@ -67,6 +69,7 @@ jobs:
   macos:
     name: macos · zsh e bash 5
     runs-on: macos-latest
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
       - name: instala o bash 5 (o do sistema é o 3.2)
@@ -77,6 +80,7 @@ jobs:
   windows:
     name: windows · PowerShell 5.1 e 7
     runs-on: windows-latest
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
       - name: PowerShell 7
