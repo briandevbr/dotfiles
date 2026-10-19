@@ -84,7 +84,13 @@ senha() {
         _uso "senha [tamanho]" "gera uma senha aleatória (mínimo 8, padrão 20)"
         return 1
     fi
-    s=$(LC_ALL=C tr -dc 'A-Za-z0-9!@#%^*_+=-' < /dev/urandom 2> /dev/null | head -c "$n")
+    # lê o /dev/urandom em blocos de 512 bytes: um 'tr < /dev/urandom | head' sem fim
+    # trava pra sempre num processo que herdou o SIGPIPE ignorado (o tr do macOS não para)
+    s=""
+    while [ "${#s}" -lt "$n" ]; do
+        s+=$(head -c 512 /dev/urandom | LC_ALL=C tr -dc 'A-Za-z0-9!@#%^*_+=-')
+    done
+    s="${s:0:$n}"
     printf '%s\n' "$s"
     [ -t 1 ] && printf '%s' "$s" | _clip_copiar 2> /dev/null && _dica "copiada pro clipboard — cola onde precisar"
     return 0
