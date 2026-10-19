@@ -1,4 +1,4 @@
-# ==========================================
+﻿# ==========================================
 # DOTFILES · PROFILE DO POWERSHELL
 # Windows PowerShell 5.1 e PowerShell 7+ (Windows, e também pwsh no Linux/macOS)
 #
