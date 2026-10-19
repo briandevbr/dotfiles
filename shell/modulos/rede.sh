@@ -118,13 +118,13 @@ serve() {
 }
 
 # _porta_aberta host porta - alguém aceita conexão ali? (nc, ou o /dev/tcp do bash)
+# Sempre com tempo-limite: o nc de cada sistema trata o -w de um jeito, e uma
+# conexão que não responde nunca pode travar quem chamou.
 _porta_aberta() {
     if _tem nc; then
-        nc -z -w 1 "$1" "$2" > /dev/null 2>&1
-    elif _tem timeout; then
-        timeout 1 bash -c 'exec 3<> "/dev/tcp/$0/$1"' "$1" "$2" 2> /dev/null
+        _com_limite 3 nc -z -w 1 "$1" "$2" < /dev/null > /dev/null 2>&1
     else
-        bash -c 'exec 3<> "/dev/tcp/$0/$1"' "$1" "$2" 2> /dev/null
+        _com_limite 3 bash -c 'exec 3<> "/dev/tcp/$0/$1"' "$1" "$2" < /dev/null 2> /dev/null
     fi
 }
 
