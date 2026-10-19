@@ -1089,6 +1089,21 @@ function timebox([string]$min) {
         $n.Dispose()
     }
 }
+# _df_versao_disco - o commit em que o repositório está, lido do .git direto (sem abrir o git).
+# Guardado em _DF_VERSAO = o que ESTE PowerShell carregou: se outra janela (ou um git pull)
+# atualizar o repo, o atualizar percebe a diferença.
+function _df_versao_disco {
+    $g = Join-Path $Global:DOTFILES '.git'; $h = Join-Path $g 'HEAD'
+    if (-not (Test-Path $h -PathType Leaf)) { return '' }
+    $head = Get-Content $h -TotalCount 1
+    if ($head -notlike 'ref: *') { return $head }
+    $ref = $head.Substring(5); $arq = Join-Path $g $ref
+    if (Test-Path $arq -PathType Leaf) { return (Get-Content $arq -TotalCount 1) }
+    $pk = Join-Path $g 'packed-refs'
+    if (Test-Path $pk) { foreach ($l in Get-Content $pk) { $p = $l -split ' '; if ($p.Count -ge 2 -and $p[1] -eq $ref) { return $p[0] } } }
+    return ''
+}
+$Global:_DF_VERSAO = _df_versao_disco
 function atualizar {
     if (-not (Test-Path (Join-Path $Global:DOTFILES '.git'))) { _err "não achei o repositório dotfiles em $(_curto $Global:DOTFILES)" 'instale com: git clone https://github.com/briandevbr/dotfiles $HOME\dotfiles'; return }
     # só trava com mudança em arquivo do repo: arquivo novo solto (.vscode/, .idea/…) não se perde no pull
@@ -1102,7 +1117,11 @@ function atualizar {
     $sw = [Diagnostics.Stopwatch]::StartNew(); $antes = git -C $Global:DOTFILES rev-parse HEAD
     if (-not (_rodar 'procurando atualização' { param($d) git -C $d pull --ff-only -q 2>&1; if ($LASTEXITCODE) { throw 'git pull falhou' } } @($Global:DOTFILES) -Quieto)) { _dica 'tá sem internet?'; return }
     $depois = git -C $Global:DOTFILES rev-parse HEAD
-    if ($antes -eq $depois) { _ok 'já tá na versão mais nova' (git -C $Global:DOTFILES log -1 --format='%h · %cr'); return }
+    # compara com o que ESTE PowerShell carregou: outra janela (ou um git pull) pode já ter trazido a versão nova
+    $carregada = if ($Global:_DF_VERSAO) { $Global:_DF_VERSAO } else { $antes }
+    git -C $Global:DOTFILES merge-base --is-ancestor $carregada $depois 2>$null; if ($LASTEXITCODE) { $carregada = $antes }
+    if ($carregada -eq $depois) { _ok 'já tá na versão mais nova' (git -C $Global:DOTFILES log -1 --format='%h · %cr'); return }
+    $antes = $carregada
     $qtd = [int](git -C $Global:DOTFILES rev-list --count "$antes..$depois")
     . (Join-Path $Global:DOTFILES 'windows\Microsoft.PowerShell_profile.ps1')
     _feito '⟳' 'terminal atualizado' "$(_plural $qtd mudança mudanças) · $(_tempo $sw)"

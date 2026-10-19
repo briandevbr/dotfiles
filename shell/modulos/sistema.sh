@@ -434,10 +434,15 @@ atualizar() {
     fi
     depois=$(git -C "$DOTFILES" rev-parse HEAD)
 
-    if [ "$antes" = "$depois" ]; then
+    # Compara com o que ESTE terminal carregou (_DF_VERSAO), não só com o disco: se outro
+    # terminal ou um git pull já trouxe a versão nova, este aqui ainda roda a antiga.
+    local carregada="${_DF_VERSAO:-$antes}"
+    git -C "$DOTFILES" merge-base --is-ancestor "$carregada" "$depois" 2> /dev/null || carregada="$antes"
+    if [ "$carregada" = "$depois" ]; then
         _ok "já tá na versão mais nova" "$(git -C "$DOTFILES" log -1 --format='%h · %cr')"
         return 0
     fi
+    antes="$carregada"
 
     qtd=$(git -C "$DOTFILES" rev-list --count "$antes..$depois")
     # recarrega aqui mesmo: as mudanças valem na hora.

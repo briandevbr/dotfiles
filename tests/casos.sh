@@ -546,6 +546,12 @@ if [ -d clone-dotfiles/shell ]; then
     _t_tem "atualizar baixa e recarrega" "terminal atualizado" "$saida"
     _t_tem "atualizar lista o que mudou" "feat: mudança de teste" "$saida"
     _t_tem "atualizar: a dica usa a pasta real do repo" "git -C $DOTFILES reset" "$saida"
+    # outro terminal (ou um gpl) já puxou: o disco está em dia, mas ESTE terminal não
+    ( builtin cd "$T_SANDBOX/autor" && printf '\n# teste 2\n' >> shell/50-atalhos.sh &&
+      git commit -qam "fix: veio por outro terminal" && git push -q 2> /dev/null )
+    git -C "$DOTFILES" pull -q --ff-only > /dev/null 2>&1
+    saida=$(atualizar 2>&1 | _t_limpo)
+    _t_tem "atualizar recarrega terminal atrasado (disco já em dia)" "fix: veio por outro terminal" "$saida"
     printf 'mexi\n' >> "$DOTFILES/zshrc"
     _t_nao "atualizar recusa repo mexido" atualizar
     saida=$(atualizar 2>&1 | _t_limpo)

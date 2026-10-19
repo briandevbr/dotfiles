@@ -82,6 +82,31 @@ _df_indice() {
     } > "$_DF_IDX.$$" && command mv -f "$_DF_IDX.$$" "$_DF_IDX"
 }
 
+# _df_versao_disco - põe em REPLY o commit em que o repositório está, lendo o .git
+# direto (sem abrir o git). Guardado em _DF_VERSAO = o que ESTE terminal carregou:
+# se outro terminal (ou um git pull) atualizar o repo, o atualizar percebe a diferença.
+_df_versao_disco() {
+    local g="$DOTFILES/.git" head sha nome
+    REPLY=""
+    [ -r "$g/HEAD" ] || return 1
+    read -r head < "$g/HEAD"
+    case "$head" in
+        "ref: "*)
+            head="${head#ref: }"
+            if [ -r "$g/$head" ]; then
+                read -r REPLY < "$g/$head"
+            elif [ -r "$g/packed-refs" ]; then
+                while read -r sha nome; do
+                    if [ "$nome" = "$head" ]; then REPLY="$sha"; break; fi
+                done < "$g/packed-refs"
+            fi ;;
+        *) REPLY="$head" ;;                       # commit solto, sem branch
+    esac
+    [ -n "$REPLY" ]
+}
+_DF_VERSAO=""
+if _df_versao_disco; then _DF_VERSAO="$REPLY"; fi
+
 if _df_indice; then
     # shellcheck source=/dev/null
     . "$_DF_IDX"
