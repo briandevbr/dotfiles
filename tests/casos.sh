@@ -236,6 +236,12 @@ gcm 'refactor(api)!' muda rota > /dev/null 2>&1
 _t_eq "gcm com parênteses e !" "refactor(api)!: muda rota" "$(git log -1 --format=%s)"
 printf 'seis\n' >> a.txt && git add a.txt
 _t_nao "gcm tipo inválido" gcm bobagem texto
+_t_nao "gcm sem descrição avisa" gcm feat:login
+saida=$(builtin cd / && gcm 2>&1 | _t_limpo)
+t_faltam=""
+for t_t in "${_GCM_TIPOS[@]}"; do [[ "$saida" == *"  $t_t "* ]] || t_faltam+=" $t_t"; done
+_t_eq "gcm sem nada lista os tipos (até fora de um repo)" "" "$t_faltam"
+_t_tem "gcm sem nada dá exemplo de cada um" "ex.: feat(login)" "$saida"
 git reset -q a.txt && git checkout -q -- a.txt
 gundo > /dev/null 2>&1
 _t_eq "gundo desfaz e mantém no stage" "M  a.txt" "$(git status --porcelain | grep a.txt)"
