@@ -54,6 +54,9 @@ EOF
     comum=(HOME="$sandbox/home" USER=teste LOGNAME=teste SHELL="$(command -v "$sh")"
            PATH="$RAIZ/tests/stubs:$PATH" TERM=xterm-256color LANG="$LOCALE" LC_ALL="$LOCALE" TZ=UTC
            DOTFILES_TESTE=1 DOTFILES_ANIM=0 DOTFILES_CONTAGEM=0
+           # com HOMEBREW_PREFIX definido o bashrc não roda o 'brew shellenv', que poria o brew
+           # de verdade na frente dos stubs (e o teste do upgrade atualizaria o macOS inteiro)
+           HOMEBREW_PREFIX=/dotfiles-teste-sem-brew HOMEBREW_NO_AUTO_UPDATE=1
            STUB_LOG="$sandbox/stub.log" T_RAIZ="$RAIZ" T_SANDBOX="$sandbox" T_SHELL="$sh")
     if [ "$sh" = bash ]; then
         env -i "${comum[@]}" bash --norc --noprofile -O expand_aliases -c \
