@@ -22,6 +22,11 @@ jobs:
         run: sudo apt-get update -qq && sudo apt-get install -y -qq shellcheck zsh
       - name: shellcheck
         run: shellcheck -S warning bashrc install.sh shell/*.sh shell/bash/*.sh shell/modulos/*.sh tests/*.sh tests/stubs/_stub
+      - name: arquivos do PowerShell com BOM (sem ele o 5.1 lê os acentos errado)
+        run: |
+          for f in windows/*.ps1 tests/*.ps1; do
+            [ "$(head -c3 "$f" | od -An -tx1 | tr -d ' ')" = efbbbf ] || { echo "sem BOM: $f"; exit 1; }
+          done
       - name: sintaxe do zsh
         run: for f in zshrc shell/zsh/interativo.zsh shell/*.sh shell/modulos/*.sh; do zsh -n "$f" || exit 1; done
       - name: PSScriptAnalyzer
