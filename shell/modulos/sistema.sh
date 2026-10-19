@@ -430,8 +430,14 @@ atualizar() {
     fi
 
     qtd=$(git -C "$DOTFILES" rev-list --count "$antes..$depois")
-    # shellcheck source=/dev/null
-    source "$rc"                             # recarrega aqui mesmo: as mudanças valem na hora
+    # recarrega aqui mesmo: as mudanças valem na hora.
+    # No zsh, em modo zsh de verdade (esta função roda em emulação ksh, ver zshrc)
+    if [ -n "${ZSH_VERSION:-}" ]; then
+        emulate zsh -c '. "$rc"'
+    else
+        # shellcheck source=/dev/null
+        source "$rc"
+    fi
     _feito "⟳" "terminal atualizado" "$(_plural "$qtd" mudança mudanças) · $(_tempo_desde "$t0")"
     while IFS= read -r msg; do
         printf "     ${C_DIM}•${C_OFF} ${C_TEXT}%s${C_OFF}\n" "$msg"
