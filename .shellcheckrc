@@ -1,0 +1,8 @@
+# shellcheck dos dotfiles — os módulos são bash (o zsh lê em emulação ksh)
+shell=bash
+# SC1090/SC1091: source de caminho calculado (módulos, caches) — de propósito
+# SC2034: variável usada em outro módulo
+# SC2139: alias expandido na definição (ex: cat="$_BAT ...") — de propósito
+# SC2120/SC2119: função que aceita argumento opcional
+# SC2154: variável preenchida por eval (_cache_init, _us…)
+disable=SC1090,SC1091,SC2034,SC2139,SC2120,SC2119,SC2154

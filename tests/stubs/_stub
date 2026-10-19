@@ -1,0 +1,29 @@
+#!/bin/sh
+# Stub dos testes: anota a chamada em $STUB_LOG e finge que deu certo.
+# Fica na frente do PATH durante a suíte — nenhum comando perigoso de
+# verdade (desligar, apt, sudo…) roda nos testes.
+nome=$(basename "$0")
+printf '%s %s\n' "$nome" "$*" >> "${STUB_LOG:-/dev/null}"
+case "$nome" in
+    sudo)
+        # tira as opções do sudo e roda o comando (que também é stub, se for perigoso)
+        while [ $# -gt 0 ]; do
+            case "$1" in -n|-v|-k|-S) shift ;; *) break ;; esac
+        done
+        [ $# -eq 0 ] && exit 0
+        exec "$@"
+        ;;
+    docker)
+        case "$1" in
+            info) exit 1 ;;                        # "daemon parado"
+            compose) [ "$2" = version ] && exit 0 ;;
+        esac
+        ;;
+    journalctl)
+        case "$*" in *vacuum*) echo "Vacuuming done, freed 0B of archived journals" ;; esac
+        ;;
+    snap)
+        [ "$1" = list ] && printf 'Name Version Rev Tracking Publisher Notes\ncore 16 100 latest canonical disabled\n'
+        ;;
+esac
+exit 0

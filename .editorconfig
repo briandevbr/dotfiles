@@ -1,0 +1,21 @@
+# Mantém o jeito de cada arquivo em qualquer editor
+root = true
+
+[*]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+
+[*.{sh,zsh}]
+indent_style = space
+indent_size = 4
+
+[{bashrc,zshrc}]
+indent_style = space
+indent_size = 4
+
+# PowerShell: UTF-8 COM BOM, senão o Windows PowerShell 5.1 lê acento e símbolo errado
+[*.{ps1,psd1}]
+charset = utf-8-bom
+indent_style = space
+indent_size = 4
