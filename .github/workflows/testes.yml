@@ -1,0 +1,87 @@
+# Testa os dotfiles em todo push: Linux (bash e zsh), macOS (zsh e bash 5)
+# e Windows (PowerShell 5.1 e 7). Os comandos perigosos (sudo, systemctl,
+# apt…) são stubs nos testes: nada desliga nem instala de verdade.
+name: testes
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  lint:
+    name: lint (shellcheck · zsh -n · PSScriptAnalyzer)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: instala shellcheck e zsh
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq shellcheck zsh
+      - name: shellcheck
+        run: shellcheck -S warning bashrc install.sh shell/*.sh shell/bash/*.sh shell/modulos/*.sh tests/*.sh tests/stubs/_stub
+      - name: sintaxe do zsh
+        run: for f in zshrc shell/zsh/interativo.zsh shell/*.sh shell/modulos/*.sh; do zsh -n "$f" || exit 1; done
+      - name: PSScriptAnalyzer
+        shell: pwsh
+        run: |
+          Install-Module PSScriptAnalyzer -Scope CurrentUser -Force
+          $r = Invoke-ScriptAnalyzer -Path ./windows -Recurse -Settings ./windows/PSScriptAnalyzerSettings.psd1
+          $r += Invoke-ScriptAnalyzer -Path ./tests/casos.ps1 -Settings ./windows/PSScriptAnalyzerSettings.psd1
+          $r | Format-Table -AutoSize
+          if ($r) { exit 1 }
+
+  linux:
+    name: linux · ${{ matrix.perfil }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        perfil: [completo, minimo]
+    steps:
+      - uses: actions/checkout@v4
+      - name: instala o zsh (e as ferramentas opcionais no perfil completo)
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq zsh zip unzip
+          if [ "${{ matrix.perfil }}" = completo ]; then
+            sudo apt-get install -y -qq fzf zoxide bat fd-find ripgrep jq
+          fi
+      - name: testes (bash e zsh)
+        run: tests/rodar.sh
+      - name: instalador (duas vezes seguidas)
+        run: |
+          export HOME="$(mktemp -d)"
+          ./install.sh && ./install.sh
+          test "$(readlink "$HOME/.bashrc")" = "$GITHUB_WORKSPACE/bashrc"
+      - name: tempo de abertura
+        run: |
+          export HOME="$(mktemp -d)"; ./install.sh > /dev/null
+          for sh in bash zsh; do
+            "$sh" -i -c exit > /dev/null 2>&1   # 1ª vez monta os caches
+            inicio=$(date +%s%N); for i in 1 2 3 4 5; do DOTFILES_ANIM=0 "$sh" -i -c exit > /dev/null 2>&1; done
+            echo "$sh: $(( ($(date +%s%N) - inicio) / 5000000 ))ms por terminal"
+          done
+
+  macos:
+    name: macos · zsh e bash 5
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: instala o bash 5 (o do sistema é o 3.2)
+        run: brew install bash
+      - name: testes
+        run: tests/rodar.sh
+
+  windows:
+    name: windows · PowerShell 5.1 e 7
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: PowerShell 7
+        shell: pwsh
+        run: ./tests/casos.ps1
+      - name: Windows PowerShell 5.1
+        shell: powershell
+        run: .\tests\casos.ps1
