@@ -120,7 +120,7 @@ function _humano([double]$b) {
     while ($b -ge 1024 -and $i -lt 4) { $b /= 1024; $i++ }
     if ($i -eq 0) { "$sinal{0}B" -f [int]$b } elseif ($b -lt 10) { "$sinal{0:0.0}{1}" -f $b, $u[$i] } else { "$sinal{0:0}{1}" -f $b, $u[$i] }
 }
-function _tem([string]$cmd) { [bool](Get-Command $cmd -CommandType Application -ErrorAction SilentlyContinue) }
+function _tem([string]$cmd) { [bool](Get-Command $cmd -CommandType Application -ErrorAction Ignore) }
 function _precisa([string]$cmd, [string]$pacote) {
     if (_tem $cmd) { return $true }
     if (-not $pacote) { $pacote = $cmd }
@@ -205,7 +205,7 @@ function _contagem([int]$seg, [string]$msg) {
 # atalhos de git/npm. Os comandos originais continuam: Get-Content, New-Item…
 # ==========================================
 foreach ($a in 'gc', 'gl', 'gp', 'gcb', 'gm', 'gcm', 'ni', 'gin', 'gs', 'gd', 'gb', 'gst') {
-    if (Test-Path "Alias:$a") { Remove-Item "Alias:$a" -Force -ErrorAction SilentlyContinue }
+    if (Test-Path "Alias:$a") { Remove-Item "Alias:$a" -Force -ErrorAction Ignore }
 }
 
 # ==========================================
@@ -216,8 +216,11 @@ if (_tem zoxide) {
     Invoke-Expression (& { (zoxide init --cmd cd powershell | Out-String) })
 }
 $env:FZF_DEFAULT_OPTS = '--height 40% --layout=reverse --border=rounded --color=fg:#d0d0d0,bg:-1,hl:#00afff --color=fg+:#ffffff,bg+:#303030,hl+:#00ffff --color=info:#af87ff,prompt:#00afff,pointer:#ffaf00,marker:#00ff00,spinner:#af87ff,header:#af87ff,border:#585858'
-if (Get-Module -ListAvailable PSReadLine) {
-    Import-Module PSReadLine -ErrorAction SilentlyContinue
+# -ErrorAction Ignore (e não SilentlyContinue) no profile todo: sondar uma ferramenta
+# que não existe não deixa erro guardado no teu $Error.
+# PSReadLine só num console de verdade (com a saída redirecionada ele recusa as opções).
+if (-not [Console]::IsOutputRedirected -and (Get-Module -ListAvailable PSReadLine)) {
+    Import-Module PSReadLine -ErrorAction Ignore
     try {
         Set-PSReadLineOption -HistoryNoDuplicates -HistorySearchCursorMovesToEnd
         Set-PSReadLineKeyHandler -Key UpArrow -Function HistorySearchBackward      # ↑ com texto: só comandos que começam com ele
@@ -248,7 +251,7 @@ function _branch_rapido {
         $d = $pai
     }
     if (-not $d) { return $null }
-    $linha = Get-Content -LiteralPath $head -TotalCount 1 -ErrorAction SilentlyContinue
+    $linha = Get-Content -LiteralPath $head -TotalCount 1 -ErrorAction Ignore
     if ($linha -match '^ref: refs/heads/(.+)$') { return $Matches[1] }
     if ($linha) { return $linha.Substring(0, [Math]::Min(7, $linha.Length)) }
     return $null
@@ -262,7 +265,7 @@ function prompt {
     $branch = _branch_rapido
     $branch = if ($branch) { " $branch" } else { '' }
     $tempo = ''
-    $ultimo = Get-History -Count 1 -ErrorAction SilentlyContinue
+    $ultimo = Get-History -Count 1 -ErrorAction Ignore
     if ($ultimo -and $ultimo.Id -ne $Global:_DF_ULTIMO_ID) {
         $Global:_DF_ULTIMO_ID = $ultimo.Id
         $d = [int]($ultimo.EndExecutionTime - $ultimo.StartExecutionTime).TotalSeconds
@@ -388,8 +391,8 @@ function espaco([string]$alvo = '.') {
     if (-not (Test-Path -LiteralPath $alvo -PathType Container)) { _err "pasta não encontrada: $alvo"; return }
     $alvo = (Resolve-Path -LiteralPath $alvo).Path
     _pendente "medindo $(_curto $alvo)…"
-    $itens = Get-ChildItem -LiteralPath $alvo -Force -ErrorAction SilentlyContinue | ForEach-Object {
-        $tam = if ($_.PSIsContainer) { (Get-ChildItem -LiteralPath $_.FullName -Recurse -Force -File -ErrorAction SilentlyContinue | Measure-Object Length -Sum).Sum } else { $_.Length }
+    $itens = Get-ChildItem -LiteralPath $alvo -Force -ErrorAction Ignore | ForEach-Object {
+        $tam = if ($_.PSIsContainer) { (Get-ChildItem -LiteralPath $_.FullName -Recurse -Force -File -ErrorAction Ignore | Measure-Object Length -Sum).Sum } else { $_.Length }
         [pscustomobject]@{ Nome = $_.Name; Tam = [double]$tam }
     } | Sort-Object Tam -Descending | Select-Object -First 15
     _w $_CL
@@ -401,14 +404,14 @@ function espaco([string]$alvo = '.') {
 function ff([string]$texto) {
     if (-not $texto) {
         if (-not (_precisa fzf fzf)) { return }
-        $arq = Get-ChildItem -Recurse -File -ErrorAction SilentlyContinue | Where-Object { $_.FullName -notmatch '[\\/](node_modules|\.git)[\\/]' } |
+        $arq = Get-ChildItem -Recurse -File -ErrorAction Ignore | Where-Object { $_.FullName -notmatch '[\\/](node_modules|\.git)[\\/]' } |
             ForEach-Object { Resolve-Path -Relative $_.FullName } | fzf --prompt='arquivo ❯ '
         if ($arq) { _w "  $C_TEXT$arq$C_OFF`n" }
         return
     }
     _titulo '🔍' 'procurando' $texto
     if (_tem rg) { rg --line-number --color=always -- $texto; return }
-    $achou = Get-ChildItem -Recurse -File -ErrorAction SilentlyContinue | Where-Object { $_.FullName -notmatch '[\\/](node_modules|\.git)[\\/]' } |
+    $achou = Get-ChildItem -Recurse -File -ErrorAction Ignore | Where-Object { $_.FullName -notmatch '[\\/](node_modules|\.git)[\\/]' } |
         Select-String -Pattern $texto -SimpleMatch
     if ($achou) { $achou | ForEach-Object { _w "  $C_CMD$(Resolve-Path -Relative $_.Path)${C_OFF}:$C_DIM$($_.LineNumber)${C_OFF}: $($_.Line.Trim())`n" } }
     else { _aviso "nada encontrado pra '$texto'" }
@@ -644,7 +647,7 @@ function gpl {
     _pendente 'buscando novidades...'
     $env:GIT_MERGE_AUTOEDIT = 'no'
     $ok = _git pull @args
-    Remove-Item env:GIT_MERGE_AUTOEDIT -ErrorAction SilentlyContinue
+    Remove-Item env:GIT_MERGE_AUTOEDIT -ErrorAction Ignore
     if (-not $ok) { if (git diff --name-only --diff-filter=U) { _dica 'conflito! arrume os arquivos marcados e finalize com: gaa e gc "merge"' }; return }
     $depois = git rev-parse -q --verify HEAD
     if ($antes -eq $depois) { _ok 'já estava em dia' "nada novo no remoto · $(_tempo $sw)"; return }
@@ -727,7 +730,7 @@ function gm([string]$alvo) {
     $qtd = git rev-list --count "HEAD..$alvo" 2>$null
     if (-not $qtd) { _err "branch '$alvo' não existe" 'veja as branches com: gb'; return }
     if ([int]$qtd -eq 0) { _ok 'nada pra trazer' "$atual já tem tudo de $alvo"; return }
-    $env:GIT_MERGE_AUTOEDIT = 'no'; $ok = _git merge $alvo; Remove-Item env:GIT_MERGE_AUTOEDIT -ErrorAction SilentlyContinue
+    $env:GIT_MERGE_AUTOEDIT = 'no'; $ok = _git merge $alvo; Remove-Item env:GIT_MERGE_AUTOEDIT -ErrorAction Ignore
     if ($ok) { _feito '⇉' 'merge feito' "$alvo → $atual · $(_plural ([int]$qtd) commit commits)" }
     elseif (git diff --name-only --diff-filter=U) { _dica "conflito! arrume os arquivos marcados e finalize com: gaa e gc `"merge $alvo`""; _dica 'pra desistir do merge: git merge --abort' }
 }
@@ -839,18 +842,18 @@ function dstats { if (_em_docker) { docker stats --no-stream --format 'table {{.
 # PROCESSOS, PORTAS E REDE
 # ==========================================
 function _quem_usa_porta([int]$porta) {
-    if (Get-Command Get-NetTCPConnection -ErrorAction SilentlyContinue) {
-        $c = Get-NetTCPConnection -LocalPort $porta -State Listen -ErrorAction SilentlyContinue | Select-Object -First 1
-        if ($c) { return [pscustomobject]@{ Pid = $c.OwningProcess; Nome = (Get-Process -Id $c.OwningProcess -ErrorAction SilentlyContinue).ProcessName } }
+    if (Get-Command Get-NetTCPConnection -ErrorAction Ignore) {
+        $c = Get-NetTCPConnection -LocalPort $porta -State Listen -ErrorAction Ignore | Select-Object -First 1
+        if ($c) { return [pscustomobject]@{ Pid = $c.OwningProcess; Nome = (Get-Process -Id $c.OwningProcess -ErrorAction Ignore).ProcessName } }
         return $null
     }
     if (_tem ss) {
         $l = ss -lptnH "sport = :$porta" 2>$null | Select-Object -First 1
         if (-not $l) { return $null }
-        if ($l -match 'pid=(\d+)') { return [pscustomobject]@{ Pid = [int]$Matches[1]; Nome = (Get-Process -Id ([int]$Matches[1]) -ErrorAction SilentlyContinue).ProcessName } }
+        if ($l -match 'pid=(\d+)') { return [pscustomobject]@{ Pid = [int]$Matches[1]; Nome = (Get-Process -Id ([int]$Matches[1]) -ErrorAction Ignore).ProcessName } }
         return [pscustomobject]@{ Pid = $null; Nome = $null }
     }
-    if (_tem lsof) { $id = lsof -nP "-iTCP:$porta" -sTCP:LISTEN -t 2>$null | Select-Object -First 1; if ($id) { return [pscustomobject]@{ Pid = [int]$id; Nome = (Get-Process -Id ([int]$id) -ErrorAction SilentlyContinue).ProcessName } } }
+    if (_tem lsof) { $id = lsof -nP "-iTCP:$porta" -sTCP:LISTEN -t 2>$null | Select-Object -First 1; if ($id) { return [pscustomobject]@{ Pid = [int]$id; Nome = (Get-Process -Id ([int]$id) -ErrorAction Ignore).ProcessName } } }
     return $null
 }
 function port {
@@ -867,9 +870,9 @@ function port {
     try { Stop-Process -Id $u.Pid -ErrorAction Stop; _ok 'processo encerrado' "porta $porta liberada" } catch { _err 'não consegui encerrar' 'é de outro usuário? abra o terminal como administrador' }
 }
 function portas {
-    if (Get-Command Get-NetTCPConnection -ErrorAction SilentlyContinue) {
+    if (Get-Command Get-NetTCPConnection -ErrorAction Ignore) {
         Get-NetTCPConnection -State Listen | Sort-Object LocalPort -Unique | ForEach-Object {
-            _w ("  $C_CMD{0,-7}$C_OFF $C_DIM{1,-18}$C_OFF $C_TEXT{2,-18}$C_OFF $C_DIM{3}$C_OFF`n" -f $_.LocalPort, $_.LocalAddress, (Get-Process -Id $_.OwningProcess -ErrorAction SilentlyContinue).ProcessName, $_.OwningProcess)
+            _w ("  $C_CMD{0,-7}$C_OFF $C_DIM{1,-18}$C_OFF $C_TEXT{2,-18}$C_OFF $C_DIM{3}$C_OFF`n" -f $_.LocalPort, $_.LocalAddress, (Get-Process -Id $_.OwningProcess -ErrorAction Ignore).ProcessName, $_.OwningProcess)
         }
     } elseif (_tem ss) { ss -tlnp } elseif (_tem lsof) { lsof -nP -iTCP -sTCP:LISTEN } else { netstat -an | Select-String LISTEN }
 }
@@ -894,7 +897,7 @@ function waitport([string]$alvo, [int]$limite = 60) {
     if (-not $ok) { _dica 'o serviço subiu mesmo? (dps, dcl)' }
 }
 function meuip {
-    $loc = if (Get-Command Get-NetIPAddress -ErrorAction SilentlyContinue) {
+    $loc = if (Get-Command Get-NetIPAddress -ErrorAction Ignore) {
         (Get-NetIPAddress -AddressFamily IPv4 | Where-Object { $_.IPAddress -notmatch '^(127|169\.254)\.' } | Select-Object -First 1).IPAddress
     } else { ([Net.Dns]::GetHostAddresses([Net.Dns]::GetHostName()) | Where-Object { $_.AddressFamily -eq 'InterNetwork' -and $_.ToString() -notmatch '^127\.' } | Select-Object -First 1) }
     _kv 'local' "$loc"
@@ -939,8 +942,8 @@ function pk([string]$termo) {
     if (-not $sel) { return }
     $ids = @($sel | ForEach-Object { [int](($_ -split '\s+')[0]) })
     if (-not (_confirma "encerrar $(_plural $ids.Count processo processos) ($ids)?")) { _cancelado; return }
-    Stop-Process -Id $ids -ErrorAction SilentlyContinue; Start-Sleep -Seconds 2
-    $vivos = @($ids | Where-Object { Get-Process -Id $_ -ErrorAction SilentlyContinue })
+    Stop-Process -Id $ids -ErrorAction Ignore; Start-Sleep -Seconds 2
+    $vivos = @($ids | Where-Object { Get-Process -Id $_ -ErrorAction Ignore })
     if (-not $vivos) { _ok (_plural $ids.Count 'processo encerrado' 'processos encerrados'); return }
     if (_confirma "$vivos não saíram. forçar?") { Stop-Process -Id $vivos -Force; _ok 'forçado' } else { _cancelado }
 }
@@ -965,26 +968,26 @@ function rmpkg { if (-not $args) { _uso 'rmpkg <pacote>' 'descubra o nome com: l
 function _clean_etapas {
     $tmp = [IO.Path]::GetTempPath()
     $e = @(
-        @{ Nome = 'temporários teus (+7 dias)'; Pastas = @($tmp); Bloco = { param($t) Get-ChildItem -LiteralPath $t -Force -ErrorAction SilentlyContinue | Where-Object { $_.LastWriteTime -lt (Get-Date).AddDays(-7) } | Remove-Item -Recurse -Force -ErrorAction SilentlyContinue }; Args = @($tmp) }
+        @{ Nome = 'temporários teus (+7 dias)'; Pastas = @($tmp); Bloco = { param($t) Get-ChildItem -LiteralPath $t -Force -ErrorAction Ignore | Where-Object { $_.LastWriteTime -lt (Get-Date).AddDays(-7) } | Remove-Item -Recurse -Force -ErrorAction Ignore }; Args = @($tmp) }
     )
     if ($Global:_DF_WINDOWS) {
         $win = Join-Path $env:WINDIR 'Temp'
-        $e += @{ Nome = 'temporários do Windows'; Pastas = @($win); Bloco = { param($t) Get-ChildItem -LiteralPath $t -Force -ErrorAction SilentlyContinue | Remove-Item -Recurse -Force -ErrorAction SilentlyContinue }; Args = @($win) }
+        $e += @{ Nome = 'temporários do Windows'; Pastas = @($win); Bloco = { param($t) Get-ChildItem -LiteralPath $t -Force -ErrorAction Ignore | Remove-Item -Recurse -Force -ErrorAction Ignore }; Args = @($win) }
         $thumbs = Join-Path $env:LOCALAPPDATA 'Microsoft\Windows\Explorer'
-        $e += @{ Nome = 'miniaturas antigas'; Pastas = @(); Bloco = { param($t) Get-ChildItem -LiteralPath $t -Filter 'thumbcache_*.db' -ErrorAction SilentlyContinue | Remove-Item -Force -ErrorAction SilentlyContinue }; Args = @($thumbs) }
+        $e += @{ Nome = 'miniaturas antigas'; Pastas = @(); Bloco = { param($t) Get-ChildItem -LiteralPath $t -Filter 'thumbcache_*.db' -ErrorAction Ignore | Remove-Item -Force -ErrorAction Ignore }; Args = @($thumbs) }
     }
     $npm = if ($Global:_DF_WINDOWS) { Join-Path $env:LOCALAPPDATA 'npm-cache\_cacache' } else { Join-Path $HOME '.npm/_cacache' }
-    if (Test-Path $npm) { $e += @{ Nome = 'npm: cache de pacotes'; Pastas = @($npm); Bloco = { param($d) Remove-Item -Recurse -Force -LiteralPath $d -ErrorAction SilentlyContinue }; Args = @($npm) } }
+    if (Test-Path $npm) { $e += @{ Nome = 'npm: cache de pacotes'; Pastas = @($npm); Bloco = { param($d) Remove-Item -Recurse -Force -LiteralPath $d -ErrorAction Ignore }; Args = @($npm) } }
     if (_tem pip) { $e += @{ Nome = 'pip: cache'; Pastas = @(); Bloco = { pip cache purge 2>&1 }; Args = @() } }
     if (_tem scoop) { $e += @{ Nome = 'scoop: downloads antigos'; Pastas = @(); Bloco = { scoop cleanup * 2>&1; scoop cache rm * 2>&1 }; Args = @() } }
     return $e
 }
 function _clean_medir([string[]]$pastas) {
     $t = 0
-    foreach ($p in $pastas) { if ($p -and (Test-Path -LiteralPath $p)) { $t += [double](Get-ChildItem -LiteralPath $p -Recurse -Force -File -ErrorAction SilentlyContinue | Measure-Object Length -Sum).Sum } }
+    foreach ($p in $pastas) { if ($p -and (Test-Path -LiteralPath $p)) { $t += [double](Get-ChildItem -LiteralPath $p -Recurse -Force -File -ErrorAction Ignore | Measure-Object Length -Sum).Sum } }
     return $t
 }
-function _livre_bytes { $d = (Get-PSDrive -Name ((Get-Location).Drive.Name) -ErrorAction SilentlyContinue); if ($d) { [double]$d.Free } else { 0 } }
+function _livre_bytes { $d = (Get-PSDrive -Name ((Get-Location).Drive.Name) -ErrorAction Ignore); if ($d) { [double]$d.Free } else { 0 } }
 # limpar [-n] — no PowerShell 7.3+ "clean" virou palavra reservada (o bloco clean {}),
 # então o nome aqui é limpar. O clean continua valendo no Windows PowerShell 5.1.
 function limpar {
@@ -1102,9 +1105,9 @@ function _energia([string]$acao) {
 
     # o que pode se perder
     $pendente = $false
-    $jobs = @(Get-Job -State Running -ErrorAction SilentlyContinue)
+    $jobs = @(Get-Job -State Running -ErrorAction Ignore)
     if ($jobs) { _aviso "$(_plural $jobs.Count 'tarefa rodando' 'tarefas rodando') neste terminal" 'veja com: Get-Job'; $pendente = $true }
-    if (Get-Process TiWorker, wusa -ErrorAction SilentlyContinue) { _aviso 'o Windows parece estar instalando atualização' 'se puder, espere terminar antes de desligar'; $pendente = $true }
+    if (Get-Process TiWorker, wusa -ErrorAction Ignore) { _aviso 'o Windows parece estar instalando atualização' 'se puder, espere terminar antes de desligar'; $pendente = $true }
     if ($acao -ne 'suspender' -and (Test-Path $Global:DEV_HOME)) {
         $sujos = @(Get-ChildItem -Directory -LiteralPath $Global:DEV_HOME | Where-Object { (Test-Path (Join-Path $_.FullName '.git')) -and (git -C $_.FullName status --porcelain 2>$null) } | ForEach-Object Name)
         if ($sujos) { _aviso "$(_plural $sujos.Count 'projeto com mudanças' 'projetos com mudanças') fora do git" (($sujos | Select-Object -First 6) -join ' '); $pendente = $true }
@@ -1117,8 +1120,8 @@ function _energia([string]$acao) {
     $null = New-Item -ItemType Directory -Force -Path $dir
     $arq = Join-Path $dir "$acao-$(Get-Date -Format 'yyyy-MM-dd_HHmmss').log"
     $linhas = @("# $acao · $(Get-Date -Format 'dd/MM/yyyy HH:mm:ss') · $uptime")
-    if (Get-Command Get-WinEvent -ErrorAction SilentlyContinue) {
-        $linhas += Get-WinEvent -FilterHashtable @{ LogName = 'System'; Level = 1, 2, 3 } -MaxEvents 200 -ErrorAction SilentlyContinue | ForEach-Object { "$($_.TimeCreated)  [$($_.LevelDisplayName)] $($_.ProviderName): $($_.Message -replace '\s+', ' ')" }
+    if (Get-Command Get-WinEvent -ErrorAction Ignore) {
+        $linhas += Get-WinEvent -FilterHashtable @{ LogName = 'System'; Level = 1, 2, 3 } -MaxEvents 200 -ErrorAction Ignore | ForEach-Object { "$($_.TimeCreated)  [$($_.LevelDisplayName)] $($_.ProviderName): $($_.Message -replace '\s+', ' ')" }
     }
     $linhas | Set-Content -LiteralPath $arq -Encoding UTF8
     Add-Content -LiteralPath (Join-Path $dir 'energia.log') -Value "$(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')  $acao  $(if ($min) { "+$min min" } else { 'agora' })"
@@ -1152,7 +1155,7 @@ function status {
     $L = "  $C_DIM{0,-11}$C_OFF {1}`n"
     _secao 'local'
     _w ($L -f 'pasta', "$C_TEXT$((Get-Location).Path)$C_OFF")
-    $so = if ($Global:_DF_WINDOWS) { (Get-CimInstance Win32_OperatingSystem -ErrorAction SilentlyContinue).Caption } else { [Runtime.InteropServices.RuntimeInformation]::OSDescription }
+    $so = if ($Global:_DF_WINDOWS) { (Get-CimInstance Win32_OperatingSystem -ErrorAction Ignore).Caption } else { [Runtime.InteropServices.RuntimeInformation]::OSDescription }
     _w ($L -f 'sistema', "$C_TEXT$so · PowerShell $($PSVersionTable.PSVersion)$C_OFF")
     _secao 'git'
     git rev-parse --git-dir *> $null
@@ -1165,12 +1168,12 @@ function status {
     _secao 'runtime'
     foreach ($t in 'node', 'git', 'python', 'docker') { if (_tem $t) { _w ($L -f $t, "$C_TEXT$((& $t --version 2>&1 | Select-Object -First 1) -replace '^(git version|Python|Docker version) ', '')$C_OFF") } }
     _secao 'máquina'
-    $d = Get-PSDrive -Name ((Get-Location).Drive.Name) -ErrorAction SilentlyContinue
+    $d = Get-PSDrive -Name ((Get-Location).Drive.Name) -ErrorAction Ignore
     if ($d) { _w ($L -f 'disco', "$C_TEXT$(_humano $d.Free) livres$C_OFF") }
     if ($Global:_DF_WINDOWS) {
-        $os = Get-CimInstance Win32_OperatingSystem -ErrorAction SilentlyContinue
+        $os = Get-CimInstance Win32_OperatingSystem -ErrorAction Ignore
         if ($os) { _w ($L -f 'memória', "$C_TEXT$(_humano (($os.TotalVisibleMemorySize - $os.FreePhysicalMemory) * 1KB)) de $(_humano ($os.TotalVisibleMemorySize * 1KB)) em uso$C_OFF") }
-        $b = Get-CimInstance Win32_Battery -ErrorAction SilentlyContinue | Select-Object -First 1
+        $b = Get-CimInstance Win32_Battery -ErrorAction Ignore | Select-Object -First 1
         if ($b) { _w ($L -f 'bateria', "$C_TEXT$(if ($b.BatteryStatus -eq 2) { '⚡' } else { '🔋' }) $($b.EstimatedChargeRemaining)%$C_OFF") }
     }
     _w "`n"
@@ -1257,7 +1260,7 @@ function _mesmas_letras([string]$a, [string]$b) {
 $ExecutionContext.InvokeCommand.CommandNotFoundAction = {
     param($nome, $evento)
     if ($evento.CommandOrigin -ne 'Runspace' -or $nome -match '^get-' -or $nome -match '[\\/]') { return }
-    $sug = Get-Command -CommandType Function, Alias, Application -ErrorAction SilentlyContinue |
+    $sug = Get-Command -CommandType Function, Alias, Application -ErrorAction Ignore |
         Where-Object { $_.Name -notmatch '^_' -and (_mesmas_letras $nome ($_.Name -replace '\.exe$', '')) } |
         Select-Object -First 1 | ForEach-Object { $_.Name -replace '\.exe$', '' }
     $evento.StopSearch = $true
