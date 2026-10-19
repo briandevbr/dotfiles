@@ -347,7 +347,15 @@ if _tem python3 && { _tem ss || _tem lsof; }; then
     t_porta=$(( 20000 + RANDOM % 20000 ))
     saida=$(port "$t_porta" 2>&1 | _t_limpo)
     _t_tem "port livre" "porta $t_porta livre" "$saida"
-    (python3 -m http.server "$t_porta" --bind 127.0.0.1 > /dev/null 2>&1 &)
+    # O http.server faz bind, depois um getfqdn (DNS reverso) e só então listen: no macOS
+    # do CI esse DNS leva ~30s e a porta fica presa sem aceitar conexão. Aqui o getfqdn sai.
+    t_srv='import http.server as h, socketserver as s, sys
+class S(h.HTTPServer):
+    def server_bind(self):
+        s.TCPServer.server_bind(self)
+        self.server_name, self.server_port = "localhost", self.server_address[1]
+S(("127.0.0.1", int(sys.argv[1])), h.SimpleHTTPRequestHandler).serve_forever()'
+    (python3 -c "$t_srv" "$t_porta" < /dev/null > /dev/null 2>&1 &)
     waitport "127.0.0.1:$t_porta" 10 > /dev/null 2>&1
     _t "waitport espera o servidor subir" _porta_aberta 127.0.0.1 "$t_porta"
     saida=$(port "$t_porta" 2>&1 | _t_limpo)
