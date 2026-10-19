@@ -159,6 +159,22 @@ _uptime_txt() {
     else printf 'ligado há %dh%02d' $(( s / 3600 )) $(( s % 3600 / 60 )); fi
 }
 
+# _com_limite segundos comando [args...] — roda o comando e desiste se passar do tempo.
+# Num subshell: o bash interativo não escreve "[1] 12345" nem "Done" na tela.
+_com_limite() {
+    (
+        _cl_s="$1"; shift
+        "$@" &
+        _cl_p=$!
+        ( sleep "$_cl_s"; kill "$_cl_p" 2> /dev/null ) &
+        _cl_w=$!
+        wait "$_cl_p" 2> /dev/null
+        _cl_c=$?
+        kill "$_cl_w" 2> /dev/null
+        exit "$_cl_c"
+    )
+}
+
 # ---------- caminhos e tamanhos ----------
 
 # _curto [caminho] → troca o /home/você do começo por ~ (padrão: pasta atual)

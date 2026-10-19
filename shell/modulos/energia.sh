@@ -149,8 +149,9 @@ _energia_log() {
             printf '## avisos e erros desde o último boot (journalctl -b -p warning)\n'
             journalctl -b -p warning -n 300 --no-pager 2> /dev/null
         elif [ "$_SO" = macos ]; then
-            printf '## erros da última hora (log show)\n'
-            log show --last 1h --predicate 'messageType == error' --style compact 2> /dev/null | tail -n 300
+            # o log unificado do macOS é enorme: varrer 1h levaria minutos e travaria o desligar
+            printf '## erros dos últimos 5 minutos (log show, no máximo 5s procurando)\n'
+            _com_limite 5 log show --last 5m --predicate 'messageType == error' --style compact 2> /dev/null | tail -n 300
         fi
     } > "$arq" 2>&1
 
