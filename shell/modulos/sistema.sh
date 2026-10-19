@@ -99,7 +99,8 @@ rmpkg() {
 
 # Cada etapa: "nome|teste|pastas medidas|função que limpa"
 #   teste: programa que precisa existir (ou d:pasta que precisa existir)
-#   pastas: separadas por ':' — o prefixo -s: mede com sudo (pastas do sistema)
+#   pastas: separadas por ':' — o prefixo -s: mede com sudo (pastas do sistema);
+#           @tmp mede só o que o _limpa_tmp apaga (arquivos teus com +7 dias)
 _CLEAN_ETAPAS=(
     "apt: órfãos e cache|apt-get|-s:/var/cache/apt/archives|_limpa_apt"
     "pacman: órfãos e cache|pacman|-s:/var/cache/pacman/pkg|_limpa_pacman"
@@ -110,7 +111,7 @@ _CLEAN_ETAPAS=(
     "npm: cache de pacotes|d:$HOME/.npm/_cacache|$HOME/.npm/_cacache|_limpa_npm"
     "pip: cache|pip3|$HOME/.cache/pip:$HOME/Library/Caches/pip|_limpa_pip"
     "logs do sistema (+7 dias)|journalctl|-s:/var/log/journal|_limpa_journal"
-    "temporários teus (+7 dias)|find|/tmp:/var/tmp|_limpa_tmp"
+    "temporários teus (+7 dias)|find|@tmp|_limpa_tmp"
     "miniaturas de imagem|find|$HOME/.cache/thumbnails|_limpa_miniaturas"
 )
 
@@ -146,6 +147,11 @@ _limpa_miniaturas() { command rm -rf "$HOME/.cache/thumbnails/"* 2> /dev/null; r
 # _clean_medir "pastas" → bytes (prefixo -s: mede com sudo)
 _clean_medir() {
     local pastas="$1" sudo="" lista=() p
+    if [ "$pastas" = "@tmp" ]; then
+        find /tmp /var/tmp -xdev -type f -user "$(id -u)" -mtime +7 -exec du -k {} + 2> /dev/null |
+            awk '{ s += $1 } END { printf "%d", s * 1024 }'
+        return 0
+    fi
     if [[ "$pastas" == -s:* ]]; then sudo="-s"; pastas="${pastas#-s:}"; fi
     local IFS=':'
     for p in $pastas; do
@@ -201,7 +207,7 @@ clean() {
         _etapa "$i" "$n" "$nome"
         antes=$(_clean_medir "$pastas")
         if [ "$simular" -eq 1 ]; then
-            _feito "≈" "$(_humano "$antes") em cache" "$(printf '%s' "${pastas#-s:}" | tr ':' ' ')"
+            _feito "≈" "$(_humano "$antes") dá pra liberar"
             total=$(( total + antes ))
             relatorio+=("$nome|$antes")
             continue
