@@ -166,7 +166,11 @@ _com_limite() {
         _cl_s="$1"; shift
         "$@" &
         _cl_p=$!
-        ( sleep "$_cl_s"; kill "$_cl_p" 2> /dev/null ) &
+        # o trap leva o sleep junto quando o vigia é dispensado (senão sobra um sleep órfão);
+        # $! e não uma variável: o TERM pode chegar antes da atribuição, se o comando for instantâneo
+        ( trap 'kill $! 2> /dev/null; exit' TERM
+          sleep "$_cl_s" & wait $!
+          kill "$_cl_p" 2> /dev/null ) &
         _cl_w=$!
         wait "$_cl_p" 2> /dev/null
         _cl_c=$?

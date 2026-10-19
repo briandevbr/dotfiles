@@ -69,7 +69,10 @@ EOF
     fi
     # cão de guarda: se um teste travar, a suíte morre em 5 min e diz onde parou
     pid=$!
-    ( sleep 300; kill "$pid" 2> /dev/null && printf '\n✗ tempo esgotado: travou depois do último teste acima\n' ) &
+    # (o trap leva o sleep junto quando o guarda é dispensado: sem ele, sobra um sleep órfão)
+    ( trap 'kill $! 2> /dev/null; exit' TERM
+      sleep 300 & wait $!
+      kill "$pid" 2> /dev/null && printf '\n✗ tempo esgotado: travou depois do último teste acima\n' ) &
     guarda=$!
     wait "$pid"
     cod=$?
