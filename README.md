@@ -301,6 +301,8 @@ O bash que vem no macOS é o 3.2, antigo demais: use o zsh (já é o padrão) ou
 
 ### Windows — PowerShell
 
+Abra o **PowerShell** pelo menu Iniciar (não o Prompt de Comando: lá o `$HOME` não funciona e o clone vai parar numa pasta errada). Não precisa ser como administrador. Rode **um comando por vez**: o `winget` pode parar pra perguntar se você aceita os termos (responda `Y`).
+
 ```powershell
 winget install Git.Git
 git clone https://github.com/briandevbr/dotfiles.git $HOME\dotfiles
