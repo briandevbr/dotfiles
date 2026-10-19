@@ -42,8 +42,15 @@ foreach ($p in $perfis) {
 # Sem isso o Windows não deixa o profile rodar (o padrão é Restricted)
 $politica = Get-ExecutionPolicy -Scope CurrentUser
 if ($politica -in 'Undefined', 'Restricted') {
-    Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy RemoteSigned -Force
-    ok 'política de execução' 'RemoteSigned pro teu usuário (scripts locais rodam; os baixados precisam de assinatura)'
+    # Rodando com -ExecutionPolicy Bypass (o jeito do README), o Windows grava a política mas
+    # ainda solta um erro vermelho dizendo que o Bypass desta janela vale mais. É só aviso:
+    # engole e confere se gravou de verdade.
+    try { Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy RemoteSigned -Force -ErrorAction Stop } catch { $null = $_ }
+    if ((Get-ExecutionPolicy -Scope CurrentUser) -eq 'RemoteSigned') {
+        ok 'política de execução' 'RemoteSigned pro teu usuário (scripts locais rodam; os baixados precisam de assinatura)'
+    } else {
+        aviso 'não consegui mudar a política de execução' 'rode: Set-ExecutionPolicy -Scope CurrentUser RemoteSigned'
+    }
 }
 
 # Teus ajustes ficam fora do repositório
