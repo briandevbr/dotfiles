@@ -428,6 +428,17 @@ _t_nao "rmpkg sem nome = uso" rmpkg
 bkp > /dev/null 2>&1
 t_bkps=("$HOME"/dotfiles-backup/*/.bashrc)
 _t "bkp copia o .bashrc" test -f "${t_bkps[0]}"
+# tela: o cosmic-randr é stub (anota a chamada e finge que deu certo)
+saida=$(tela on 2>&1 | _t_limpo)
+_t_tem "tela on liga" "Tela do notebook ligada" "$saida"
+_t_tem "tela on chama o cosmic-randr" "cosmic-randr enable eDP-1" "$(cat "$STUB_LOG")"
+saida=$(tela off <<< n 2>&1 | _t_limpo)
+_t_tem "tela off pergunta e cancela" "cancelado" "$saida"
+_t_nao_tem "tela off cancelado não desliga" "cosmic-randr disable" "$(cat "$STUB_LOG")"
+saida=$(tela off <<< s 2>&1 | _t_limpo)
+_t_tem "tela off confirmado desliga" "Tela do notebook desligada" "$saida"
+_t_tem "tela off chama o cosmic-randr" "cosmic-randr disable eDP-1" "$(cat "$STUB_LOG")"
+_t_nao "tela sem on/off = uso" tela
 _t_tem "alias alert existe" "_alerta" "$(alias alert)"
 
 # ==========================================

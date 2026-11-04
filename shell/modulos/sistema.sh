@@ -466,17 +466,84 @@ tela() {
     local saida="eDP-1"
     case "$1" in
         on)
-            if cosmic-randr enable "$saida"; then _ok "Tela do notebook ligada"
-            else _err "Não consegui ligar a tela $saida" "rode: cosmic-randr list  (confira o nome da saída)"; fi
+            if _tela_trocar enable "$saida"; then _ok "Tela do notebook ligada"
+            else _err "Não consegui ligar a tela $saida" "rode: cosmic-randr list  (confira o nome da saída)"; _tela_erro; fi
             ;;
         off)
             _aviso "Vai desligar a tela do notebook" "confirme que o HDMI está ligado, senão fica sem tela"
             if ! _confirma "Continuar?"; then _cancelado; return 0; fi
-            if cosmic-randr disable "$saida"; then _ok "Tela do notebook desligada"
-            else _err "Não consegui desligar a tela $saida" "rode: cosmic-randr list"; fi
+            if _tela_trocar disable "$saida"; then _ok "Tela do notebook desligada"
+            else _err "Não consegui desligar a tela $saida" "rode: cosmic-randr list"; _tela_erro; fi
             ;;
         *)
             _err "uso: tela on | tela off"
             ;;
     esac
+}
+
+# _tela_erro - mostra o que o cosmic-randr disse quando falhou
+_tela_erro() {
+    local linha
+    while IFS= read -r linha; do
+        [ -n "$linha" ] && printf "     ${C_DIM}│${C_OFF} %s\n" "$linha" >&2
+    done <<< "${_TELA_SAIDA:-}"
+    return 1
+}
+
+# _tela_trocar enable|disable saída - roda o cosmic-randr sem deixar o teclado "vazar".
+# Enquanto o COSMIC reconfigura as telas, o Enter apertado achando que travou (ou
+# repetido sozinho, quando o compositor perde a tecla solta) aparecia como linha em
+# branco na hora e virava um prompt vazio depois. Aqui, o que chega do teclado durante
+# a troca — e no segundo seguinte, com as janelas ainda se ajeitando — é lido em
+# silêncio e jogado fora. A saída do cosmic-randr vai pra _TELA_SAIDA, não pra tela.
+_tela_trocar() {
+    local log pid cod=0 agora fim=0 estado="" trap_antes="" _tecla teclado=0
+    [ -d "$DOTFILES_CACHE" ] || mkdir -p "$DOTFILES_CACHE"
+    log="$DOTFILES_CACHE/tela.$$.log"
+    [ -t 0 ] && teclado=1
+
+    # sem controle de jobs o shell não escreve "[1] 12345" nem "Done" (igual o _rodar)
+    if [ -n "${ZSH_VERSION:-}" ]; then
+        setopt localoptions localtraps nomonitor nonotify
+    else
+        local -; set +m
+        trap_antes=$(trap -p INT)
+    fi
+    if [ "$teclado" -eq 1 ]; then
+        estado=$(stty -g 2> /dev/null)
+        stty -echo 2> /dev/null
+    fi
+    { cosmic-randr "$1" "$2" < /dev/null > "$log" 2>&1 & } 2> /dev/null
+    pid=$!
+    trap 'kill "$pid" 2> /dev/null' INT
+    _pendente "trocando a tela…"
+
+    while :; do
+        if [ "$fim" -eq 0 ] && ! kill -0 "$pid" 2> /dev/null; then
+            _us fim
+            [ "$teclado" -eq 1 ] && fim=$(( fim + 1000000 ))   # +1s pras janelas se ajeitarem
+        fi
+        if [ "$fim" -ne 0 ]; then
+            _us agora
+            [ "$agora" -ge "$fim" ] && break
+        fi
+        if [ "$teclado" -eq 0 ]; then
+            sleep 0.1
+        elif [ -n "${ZSH_VERSION:-}" ]; then
+            read -s -t 0.1 -k 1 _tecla
+        else
+            read -r -s -t 0.1 -n 1 _tecla
+        fi
+    done
+    wait "$pid" 2> /dev/null
+    cod=$?
+
+    [ -n "$estado" ] && stty "$estado" 2> /dev/null
+    if [ -z "${ZSH_VERSION:-}" ]; then
+        if [ -n "$trap_antes" ]; then eval "$trap_antes"; else trap - INT; fi
+    fi
+    printf '%s' "$_CL"
+    _TELA_SAIDA=$(< "$log")
+    command rm -f "$log"
+    return "$cod"
 }
