@@ -4,7 +4,7 @@
 
 > 🌐 Leia em [Português](./README.md)
 
-[![Typing SVG](https://readme-typing-svg.demolab.com?font=Fira+Code&weight=500&size=18&pause=1000&color=2F81F7&center=true&vCenter=true&width=520&height=36&lines=Bash%2C+Zsh+and+PowerShell+in+one+terminal;131+commands+with+visual+feedback;Opens+in+21ms%2C+updates+with+1+command)](#-how-it-works)
+[![Typing SVG](https://readme-typing-svg.demolab.com?font=Fira+Code&weight=500&size=18&pause=1000&color=2F81F7&center=true&vCenter=true&width=520&height=36&lines=Bash%2C+Zsh+and+PowerShell+in+one+terminal;131+commands+with+visual+feedback;Opens+in+33ms%2C+updates+with+1+command)](#-how-it-works)
 
 [![Stack](https://skillicons.dev/icons?i=bash,linux,git,docker,github)](#️-technologies-used)
 
@@ -45,7 +45,7 @@ The terminal I use every day on Pop!_OS, now also on zsh (Linux and macOS) and P
 | `shell/30-ferramentas.sh` | Turns on fzf, eza, bat, fd, delta, nvm (lazy) and Homebrew — each one only if installed |
 | `shell/40-modulos.sh` | On-demand loading: every command starts as a one-line stub, and its module is only read on first use |
 | `shell/50-atalhos.sh` | The aliases (`..`, `p`, `rm -i`, `limpar`, old names) and the panels' sections |
-| `shell/99-inicio.sh` | Opening banner (animated on the first terminal of the day) and jumping into the projects folder |
+| `shell/99-inicio.sh` | Full opening banner on every terminal (animated on the first one of the day) and jumping into the projects folder |
 | `shell/bash/` | Bash-only parts: history, `shopt`, bash-completion, keys, prompt with `PROMPT_COMMAND`/`PS0` and Tab for the shortcuts |
 | `shell/zsh/interativo.zsh` | Zsh-only parts: history, case-insensitive Tab (compiled compinit), arrow keys, zoxide, fzf and the same prompt as bash |
 | `shell/modulos/git.sh` | The 34 git shortcuts (`gs`, `gac`, `gcm`, `gp`, `gup`, `gpr`…) and the `gd`/`gds` interface |
@@ -135,7 +135,7 @@ In a regular terminal you have to memorize long commands, and the answers come i
 
 - **Interface** — answers use the same colors as the prompt: green ✓ when it worked, red ✗ when it didn't, with a hint on how to fix it right below. Slow operations show a spinner with a running timer; cleanup and upgrades show a progress bar per step. The prompt shows the time, the folder, the git branch, warns you when the last command failed and how long a slow command took (`⏱ 12s`). In several commands, if you don't type a file, branch or container name, a searchable list with preview opens.
 - **Productivity** — short shortcuts do the work of long commands: `gac "message"` does the same as `git add --all && git commit -m "message"`, and `gcm feat:login adds button` builds the commit in the Conventional Commits format (on its own, `gcm` shows each type, when to use it and an example). Swapped letters by accident, like `gti`? It suggests the right command. And `atualizar` brings the terminal to its newest version with a single word.
-- **Performance** — the terminal opens in ~21ms on bash and ~14ms on zsh (the old `bashrc` took ~29ms, with half the commands). Commands are only read the first time you use one of them, the prompt reads the branch without starting git, and the tools don't run on every terminal: their `init` output is cached.
+- **Performance** — the terminal opens in ~33ms on bash and ~23ms on zsh, already drawing the full banner (the old `bashrc` took ~29ms, with half the commands and a simple banner). Commands are only read the first time you use one of them, the prompt reads the branch without starting git, and the tools don't run on every terminal: their `init` output is cached.
 - **Safety** — `poweroff`, `reboot` and `suspend` first check what could be lost (running programs, projects with changes outside git, an installation in progress), ask, save a log and still give you a 5-second countdown that Ctrl+C cancels. `clean -n` shows how much can be freed without deleting anything.
 
 ### Forgot a command? Use `dev` and `help`
@@ -247,9 +247,9 @@ pwsh -NoProfile -File tests/casos.ps1     # PowerShell (on Windows: powershell -
 
 | Suite | Cases | What it covers |
 |---|---|---|
-| bash | 263 | helpers, spinner, on-demand loading, navigation and files (compactar → extract round trip), utilities, the whole git flow with a local remote, node, ports with a real HTTP server, docker stopped, `clean`/`upgrade`, power, panels, prompt and `atualizar` with a fake repository |
-| zsh | 262 | the same cases (except `help cd`, which is bash-only) |
-| PowerShell | 85 | the Windows profile: helpers, files, git, node, power, panels |
+| bash | 264 | helpers, spinner, on-demand loading, navigation and files (compactar → extract round trip), utilities, the whole git flow with a local remote, node, ports with a real HTTP server, docker stopped, `clean`/`upgrade`, power, panels, prompt and `atualizar` with a fake repository |
+| zsh | 263 | the same cases (except `help cd`, which is bash-only) |
+| PowerShell | 87 | the Windows profile: helpers, files, git, node, power, panels |
 
 Each shell runs in a throwaway HOME and the dangerous commands (`sudo`, `systemctl`, `shutdown`, `apt`…) are stubs that only log the call: the tests never power off or install anything. On [GitHub Actions](https://docs.github.com/actions) the suite runs on every push on Linux (with and without the optional tools), macOS (zsh and bash 5) and Windows (PowerShell 5.1 and 7), along with [ShellCheck](https://www.shellcheck.net/) and [PSScriptAnalyzer](https://github.com/PowerShell/PSScriptAnalyzer).
 
@@ -313,7 +313,7 @@ Rather copy and paste? Open the profile with `notepad $PROFILE`, paste the conte
 
 Follow the Linux steps inside the distro. `open`, `clip`, notifications and `poweroff` talk to Windows (`poweroff` shuts down the whole Windows, and says so first).
 
-When the terminal opens you get the `◈  GROUND CONTROL` banner with the date and how long it took to open, and the two-line prompt:
+When the terminal opens you get the `◈  GROUND CONTROL` banner with the date, how long it took to open and the system check (system, machine, tools and projects), and the two-line prompt:
 
 ```text
 [brian] at 08:48:12  ~/Documents/projetos/Pizzaria3Irmaos main
@@ -328,15 +328,15 @@ To use another name, projects folder or `timebox` length, put it in `~/.config/d
 
 - [x] Prompt with time, folder, branch (read without starting git), error and slow-command time
 - [x] The 68 original commands preserved — 131 in total
-- [x] On-demand loading: bash opens in ~21ms (before ~29ms) and zsh in ~14ms
-- [x] Visual feedback: ✓/✗ with hints, spinner, progress bar and an animated banner on the first terminal of the day
+- [x] On-demand loading: bash opens in ~33ms and zsh in ~23ms, with the full banner
+- [x] Visual feedback: ✓/✗ with hints, spinner, progress bar and the full banner on every terminal (animated on the first one of the day)
 - [x] `poweroff`, `reboot` and `suspend` with checks, preventive log, countdown and scheduling
 - [x] Deep `clean` (apt, pacman, dnf, flatpak, snap, brew, npm, pip, logs and temp files) with a report and dry run; `upgrade`
 - [x] Git with Conventional Commits (`gcm`), PR in the browser (`gpr`), `gup`, `gbr`, `gwip`
 - [x] Docker, network, process and dev utilities
 - [x] Zsh on Linux and macOS with the same code, PowerShell 5.1/7 on Windows, and WSL
 - [x] Installers you can run as many times as you like
-- [x] 610 tests on bash, zsh and PowerShell, running in CI on Linux, macOS and Windows
+- [x] 614 tests on bash, zsh and PowerShell, running in CI on Linux, macOS and Windows
 
 ---
 

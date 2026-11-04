@@ -44,6 +44,8 @@ $errosCarga = @($Error | Select-Object -First ($Error.Count - $antes) | Where-Ob
 _t_eq 'profile carrega sem erro' 0 $errosCarga.Count
 $errosCarga | ForEach-Object { Write-Output "      $_" }
 _t_tem 'banner aparece' 'GROUND CONTROL' $saidaCarga
+_t_tem 'banner completo em todo terminal (não só no 1º do dia)' 'arsenal' $saidaCarga
+_t_tem 'banner mostra quanto o terminal levou' '⚡' $saidaCarga
 _t_eq 'alias gc saiu (virou o atalho do git)' 'Function' (Get-Command gc).CommandType
 _t_eq 'alias ni saiu (virou o atalho do npm)' 'Function' (Get-Command ni).CommandType
 

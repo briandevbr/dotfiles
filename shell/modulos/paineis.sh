@@ -25,50 +25,6 @@ _memoria() {
     printf '%s de %s em uso' "$(_humano $(( total - livre )))" "$(_humano "$total")"
 }
 
-# _bateria → "carga estado" (estado: Charging/Discharging/Full) ou nada se não tiver bateria
-_bateria() {
-    local b carga estado
-    for b in /sys/class/power_supply/BAT0 /sys/class/power_supply/BAT1; do
-        if [ -r "$b/capacity" ]; then
-            read -r carga < "$b/capacity"
-            read -r estado < "$b/status" 2> /dev/null
-            printf '%s %s' "$carga" "${estado:-Unknown}"
-            return 0
-        fi
-    done
-    if [ "$_SO" = macos ] && _tem pmset; then
-        local linha re='([0-9]+)%; ([a-z ]+);'
-        linha=$(pmset -g batt 2> /dev/null | sed -n 2p)
-        if [[ $linha =~ $re ]]; then
-            estado="${BASH_REMATCH[2]}"
-            case "$estado" in charging) estado=Charging ;; charged) estado=Full ;; *) estado=Discharging ;; esac
-            printf '%s %s' "${BASH_REMATCH[1]}" "$estado"
-            return 0
-        fi
-    fi
-    return 1
-}
-
-# _nome_sistema → "Pop!_OS 24.04 LTS" / "macOS 15.1" / "Ubuntu 24.04 (WSL)"
-_nome_sistema() {
-    local nome="" k v
-    if [ "$_SO" = macos ]; then
-        nome="macOS $(sw_vers -productVersion 2> /dev/null)"
-    elif [ -r /etc/os-release ]; then
-        while IFS='=' read -r k v; do
-            [ "$k" = PRETTY_NAME ] && { nome="${v//\"/}"; break; }
-        done < /etc/os-release
-    fi
-    [ "$_SO" = wsl ] && nome="$nome (WSL)"
-    printf '%s' "${nome:-$(uname -s)}"
-}
-
-# _versao_shell → "bash 5.2" / "zsh 5.9"
-_versao_shell() {
-    if [ -n "${ZSH_VERSION:-}" ]; then printf 'zsh %s' "$ZSH_VERSION"
-    else printf 'bash %s' "${BASH_VERSION%%(*}"; fi
-}
-
 # status - panorama completo do ambiente
 status() {
     local L="  ${C_DIM}%-11s${C_OFF} %s\n"

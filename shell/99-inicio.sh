@@ -7,41 +7,31 @@
 
 unalias banner 2> /dev/null
 
-# _banner_fixo - o banner de todo terminal: aparece na hora, sem animação.
-# A data sai do printf/strftime (builtin) e o tempo do relógio do shell:
-# nenhum processo aberto só pra desenhar.
-_banner_fixo() {
-    local data agora ms=""
-    _data_var data '%a %d %b · %H:%M'
-    if [ -n "${_DF_T_INI:-}" ]; then
-        _us agora
-        ms=$(( (agora - _DF_T_INI) / 1000 ))
-    fi
-    printf "\n  ${C_ACCENT}◈  GROUND CONTROL${C_OFF}   ${C_DIM}%s${C_OFF}" "$data"
-    [ -n "$ms" ] && printf "   ${C_DIM}⚡%sms${C_OFF}" "$ms"
-    printf "\n  ${C_DIM}   all systems nominal — ${C_TEXT}dev${C_DIM} your tools · ${C_TEXT}help${C_DIM} the system${C_OFF}\n\n"
-}
-
 # _banner_linha "rótulo" "texto" - gira um instante e escreve a linha da checagem
 _banner_linha() {
-    local i
+    local i n=$(( 9 - ${#1} ))            # alinha o rótulo sem abrir processo (o _pad abriria)
+    (( n < 0 )) && n=0
     if _anim; then
         for i in 0 3 6; do
             printf '%s     %s%s%s' "$_CL" "$C_ACCENT" "${_SPIN[i]}" "$C_OFF"
             sleep 0.03
         done
     fi
-    printf "%s     ${C_SECAO}▸${C_OFF} ${C_DIM}%s${C_OFF} ${C_TEXT}%s${C_OFF}\n" "$_CL" "$(_pad "$1" 9)" "$2"
+    printf "%s     ${C_SECAO}▸${C_OFF} ${C_DIM}%s%*s${C_OFF} ${C_TEXT}%s${C_OFF}\n" "$_CL" "$1" "$n" "" "$2"
 }
 
-# _banner_animado - a "sequência de lançamento": título digitado e as checagens do sistema
+# _banner_animado - a "sequência de lançamento": título e as checagens do sistema.
+# Anima (título digitado, checagens girando) quando o _anim deixa; senão sai pronto.
+# _DF_CARGA_MS (só na abertura do terminal): quanto ele levou pra abrir, no ⚡.
 _banner_animado() {
     local data maq bat ars="" nome t n=0 d
     _data_var data '%a %d %b · %H:%M'
 
     printf "\n  %s" "$C_ACCENT"
     _digitar "◈  GROUND CONTROL" 0.012
-    printf "%s   %s%s%s\n" "$C_OFF" "$C_DIM" "$data" "$C_OFF"
+    printf "%s   %s%s%s" "$C_OFF" "$C_DIM" "$data" "$C_OFF"
+    if [ -n "${_DF_CARGA_MS:-}" ]; then printf "   %s⚡%sms%s" "$C_DIM" "$_DF_CARGA_MS" "$C_OFF"; fi
+    printf "\n"
 
     _banner_linha "sistema" "$(_nome_sistema) · $(_versao_shell)"
 
@@ -69,19 +59,21 @@ _banner_animado() {
 banner() { _banner_animado; }
 
 if [ -z "${_BASHRC_CARREGADO:-}" ]; then
-    # O banner animado só aparece no primeiro terminal do dia: os outros abrem na hora
+    # O banner completo aparece em todo terminal novo. A animação (título digitado,
+    # checagens girando) só no primeiro do dia: nos outros ele sai pronto, na hora.
     _df_hoje=""
     _df_ultimo=""
     _data_var _df_hoje '%Y-%m-%d'
     [ -r "$DOTFILES_ESTADO/banner-dia" ] && read -r _df_ultimo < "$DOTFILES_ESTADO/banner-dia"
+    if [ -n "${_DF_T_INI:-}" ]; then _us _DF_CARGA_MS; _DF_CARGA_MS=$(( (_DF_CARGA_MS - _DF_T_INI) / 1000 )); fi
     if [ "$_df_ultimo" != "$_df_hoje" ] && _anim; then
         _banner_animado
         { [ -d "$DOTFILES_ESTADO" ] || mkdir -p "$DOTFILES_ESTADO"; } 2> /dev/null &&
             printf '%s\n' "$_df_hoje" > "$DOTFILES_ESTADO/banner-dia"
     else
-        _banner_fixo
+        DOTFILES_ANIM=0 _banner_animado
     fi
-    unset _df_hoje _df_ultimo
+    unset _df_hoje _df_ultimo _DF_CARGA_MS
 
     # ==========================================
     # PASTA PADRÃO

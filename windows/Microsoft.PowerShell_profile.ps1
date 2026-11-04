@@ -1335,7 +1335,9 @@ $ExecutionContext.InvokeCommand.CommandNotFoundAction = {
 function banner {
     $t = '◈  GROUND CONTROL'
     _w "`n  $C_ACCENT"; foreach ($ch in $t.ToCharArray()) { _w $ch; if (_anim) { Start-Sleep -Milliseconds 12 } }
-    _w "$C_OFF   $C_DIM$((Get-Date).ToString('ddd dd MMM · HH:mm'))$C_OFF`n"
+    _w "$C_OFF   $C_DIM$((Get-Date).ToString('ddd dd MMM · HH:mm'))$C_OFF"
+    if ($Global:_DF_CARGA_MS) { _w "   $C_DIM⚡$($Global:_DF_CARGA_MS)$C_OFF" }   # só na abertura: quanto levou
+    _w "`n"
     $ars = (@('git', 'fzf', 'zoxide', 'rg', 'docker') | ForEach-Object { if (_tem $_) { "$_ $C_OK✓$C_TEXT" } else { "$C_DIM$_ ✗$C_TEXT" } }) -join '  '
     foreach ($l in @(@('shell', "PowerShell $($PSVersionTable.PSVersion)"), @('arsenal', $ars), @('projetos', (_curto $Global:DEV_HOME)))) {
         if (_anim) { foreach ($f in 0, 3, 6) { _w "$_CL     $C_ACCENT$($Global:_SPIN[$f])$C_OFF"; Start-Sleep -Milliseconds 30 } }
@@ -1352,14 +1354,19 @@ if (-not $Global:_DF_CARREGADO) {
     $hoje = Get-Date -Format 'yyyy-MM-dd'
     $marca = Join-Path $Global:DOTFILES_ESTADO 'banner-dia'
     $ultimo = if (Test-Path -LiteralPath $marca) { Get-Content -LiteralPath $marca -TotalCount 1 } else { '' }
+    # O banner completo aparece em todo terminal novo. A animação só no primeiro do dia:
+    # nos outros ele sai pronto, na hora.
+    $Global:_DF_CARGA_MS = $Global:_DF_CARGA
     if ($ultimo -ne $hoje -and (_anim)) {
         banner
         $null = New-Item -ItemType Directory -Force -Path $Global:DOTFILES_ESTADO
         Set-Content -LiteralPath $marca -Value $hoje
     } else {
-        _w "`n  $C_ACCENT◈  GROUND CONTROL$C_OFF   $C_DIM$((Get-Date).ToString('ddd dd MMM · HH:mm'))   ⚡$($Global:_DF_CARGA)$C_OFF`n"
-        _w "  $C_DIM   all systems nominal — ${C_TEXT}dev$C_DIM your tools · ${C_TEXT}help$C_DIM the system$C_OFF`n`n"
+        $animAntes = $Global:DOTFILES_ANIM; $Global:DOTFILES_ANIM = '0'
+        banner
+        $Global:DOTFILES_ANIM = $animAntes
     }
+    $Global:_DF_CARGA_MS = $null
     # Só entra na pasta de projetos se abriu na home (o terminal do VS Code abre no projeto)
     if ((Get-Location).Path -eq $HOME -and (Test-Path -LiteralPath $Global:DEV_HOME)) { Set-Location $Global:DEV_HOME }
 }

@@ -508,8 +508,13 @@ _comando_nao_encontrado gti > /dev/null 2>&1
 _t_eq "comando não encontrado devolve 127" "127" "$?"
 _t "_mesmas_letras" _mesmas_letras gti git
 _t_nao "_mesmas_letras diferente" _mesmas_letras abc abd
-_t_tem "banner fixo" "GROUND CONTROL" "$(_banner_fixo 2>&1)"
-_t_tem "banner animado (sem animação nos testes)" "arsenal" "$(_banner_animado 2>&1)"
+_t_tem "banner (sem animação nos testes)" "arsenal" "$(_banner_animado 2>&1)"
+_t_tem "banner mostra quanto o terminal levou" "⚡12ms" "$(_DF_CARGA_MS=12 _banner_animado 2>&1)"
+# terminal novo no mesmo dia: o banner completo aparece de novo (antes era só o curto)
+_data_var t_hoje '%Y-%m-%d'
+mkdir -p "$DOTFILES_ESTADO" && printf '%s\n' "$t_hoje" > "$DOTFILES_ESTADO/banner-dia"
+saida=$( ( unset _BASHRC_CARREGADO; DOTFILES_ANIM=1; . "$DOTFILES/shell/99-inicio.sh" ) 2>&1 | _t_limpo)
+_t_tem "banner completo em todo terminal novo (não só no 1º do dia)" "arsenal" "$saida"
 
 # ==========================================
 _t_secao "prompt"
