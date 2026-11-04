@@ -234,7 +234,7 @@ if (-not [Console]::IsOutputRedirected -and (Get-Module -ListAvailable PSReadLin
 }
 
 # ==========================================
-# PROMPT — igual ao do bash:  [brian] in 15:45:10  ~/pasta branch  ✗ 1  ⏱ 12s
+# PROMPT — igual ao do bash:  [brian] at 15:45:10  ~/pasta branch  ✗ 1  ⏱ 12s
 # A branch vem do .git/HEAD lido direto (sem chamar o git a cada Enter)
 # ==========================================
 function _branch_rapido {
@@ -274,7 +274,7 @@ function prompt {
         if ($d -ge $Global:DOTFILES_LENTO) { $tempo = if ($d -ge 60) { "  ⏱ $([int][Math]::Floor($d / 60))m$($d % 60)s" } else { "  ⏱ ${d}s" } }
     }
     $e = [char]27
-    "$e[1;38;5;39m[$Global:PROMPT_NOME]$e[0;38;5;245m in $e[1;38;5;141m$(Get-Date -Format HH:mm:ss)  $e[1;38;5;51m$(_curto)$e[1;38;5;214m$branch$e[1;38;5;196m$erro$e[0;38;5;245m$tempo$e[0m`n$e[1;38;5;46m>$e[0m "
+    "$e[1;38;5;39m[$Global:PROMPT_NOME]$e[0;38;5;245m at $e[1;38;5;141m$(Get-Date -Format HH:mm:ss)  $e[1;38;5;51m$(_curto)$e[1;38;5;214m$branch$e[1;38;5;196m$erro$e[0;38;5;245m$tempo$e[0m`n$e[1;38;5;46m>$e[0m "
 }
 
 # ==========================================

@@ -511,6 +511,7 @@ if [ "$T_SHELL" = bash ]; then
     _DF_T0=$(( EPOCHSECONDS - 75 )); _prompt_hook
     _t_eq "prompt mostra comando lento" "  ⏱ 1m15s" "$_PS1_TEMPO"
     _t_tem "PS1 tem o nome" 'PROMPT_NOME' "$PS1"
+    _t_tem "PS1: 'at' antes da hora (não 'in')" ' at ' "$PS1"
 else
     false; _df_precmd
     _t_eq "prompt marca o erro" "  ✗ 1" "$_PS1_ERRO"
@@ -519,6 +520,7 @@ else
     _DF_T0=$(( EPOCHSECONDS - 75 )); _df_precmd
     _t_eq "prompt mostra comando lento" "  ⏱ 1m15s" "$_PS1_TEMPO"
     _t_tem "PROMPT tem o nome" 'PROMPT_NOME' "$PROMPT"
+    _t_tem "PROMPT: 'at' antes da hora (não 'in')" ' at ' "$PROMPT"
 fi
 
 # ==========================================

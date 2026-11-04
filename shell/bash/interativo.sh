@@ -86,19 +86,19 @@ PS0='${_DF_PS0:$((_DF_T0=EPOCHSECONDS,0)):0}'
 
 # Cores do prompt: negrito + tons vivos, pra achar ele de relance no meio da saída
 P_USER=$'\033[1;38;5;39m'     # azul vivo      [brian]
-P_SEP=$'\033[0;38;5;245m'     # cinza          " in " (sem negrito: só separa)
+P_SEP=$'\033[0;38;5;245m'     # cinza          " at " (sem negrito: só separa)
 P_HORA=$'\033[1;38;5;141m'    # lilás vivo     hora
 P_PASTA=$'\033[1;38;5;51m'    # ciano vivo     pasta atual
 P_BRANCH=$'\033[1;38;5;214m'  # laranja vivo   branch do git
 P_ERRO=$'\033[1;38;5;196m'    # vermelho vivo  ✗ código do erro
 P_CIFRAO=$'\033[1;38;5;46m'   # verde forte    $
 
-# Linha 1: [brian] in 15:45:10  ~/pasta branch  ✗ erro  ⏱ 12s
+# Linha 1: [brian] at 15:45:10  ~/pasta branch  ✗ erro  ⏱ 12s
 # Linha 2: só o $ verde
 # Aspas simples: as variáveis são lidas a CADA prompt, não uma vez só.
 # Todo código de cor fica entre \[ \] — sem isso o bash erra a largura
 # da linha e o texto se embola quando o comando é comprido.
-PS1='\[${P_USER}\][${PROMPT_NOME}]\[${P_SEP}\] in \[${P_HORA}\]\t  \[${P_PASTA}\]\w\[${P_BRANCH}\]${_PS1_BRANCH}\[${P_ERRO}\]${_PS1_ERRO}\[${P_SEP}\]${_PS1_TEMPO}\[${C_OFF}\]\n\[${P_CIFRAO}\]\$\[${C_OFF}\] '
+PS1='\[${P_USER}\][${PROMPT_NOME}]\[${P_SEP}\] at \[${P_HORA}\]\t  \[${P_PASTA}\]\w\[${P_BRANCH}\]${_PS1_BRANCH}\[${P_ERRO}\]${_PS1_ERRO}\[${P_SEP}\]${_PS1_TEMPO}\[${C_OFF}\]\n\[${P_CIFRAO}\]\$\[${C_OFF}\] '
 
 # ==========================================
 # TAB DOS ATALHOS

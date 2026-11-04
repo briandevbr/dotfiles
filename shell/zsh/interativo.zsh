@@ -98,7 +98,7 @@ unset _df_f _df_fzf _df_arq
 
 # ---------- PROMPT ----------
 # Mesmo prompt do bash:
-#   [brian] in 15:45:10  ~/pasta branch  ✗ erro  ⏱ 12s
+#   [brian] at 15:45:10  ~/pasta branch  ✗ erro  ⏱ 12s
 #   $
 _df_precmd() {
     local st=$? d
@@ -124,7 +124,7 @@ _df_preexec() { _DF_T0=$EPOCHSECONDS; _DF_ULTIMO_CMD="$1"; }
 precmd_functions=(_df_precmd ${precmd_functions:#_df_precmd})
 preexec_functions=(_df_preexec ${preexec_functions:#_df_preexec})
 
-PROMPT='%B%F{39}[${PROMPT_NOME}]%b%F{245} in %B%F{141}%D{%H:%M:%S}  %F{51}%~%F{214}${_PS1_BRANCH}%F{196}${_PS1_ERRO}%b%F{245}${_PS1_TEMPO}%f
+PROMPT='%B%F{39}[${PROMPT_NOME}]%b%F{245} at %B%F{141}%D{%H:%M:%S}  %F{51}%~%F{214}${_PS1_BRANCH}%F{196}${_PS1_ERRO}%b%F{245}${_PS1_TEMPO}%f
 %B%F{46}%(!.#.$)%f%b '
 
 # Comando não encontrado (no zsh o nome tem um 'r' no fim)
