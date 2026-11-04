@@ -247,9 +247,9 @@ pwsh -NoProfile -File tests/casos.ps1     # PowerShell (no Windows: powershell -
 
 | Suíte | Casos | O que cobre |
 |---|---|---|
-| bash | 264 | helpers, spinner, carregamento sob demanda, navegação e arquivos (compactar → extract ida e volta), utilitários, o fluxo git inteiro com um remoto local, node, portas com um servidor HTTP de verdade, docker parado, `clean`/`upgrade`, energia, painéis, prompt e o `atualizar` com um repositório de mentira |
-| zsh | 263 | os mesmos casos (menos o `help cd`, que é do bash) |
-| PowerShell | 87 | o profile do Windows: helpers, arquivos, git, node, energia, painéis |
+| bash | 265 | helpers, spinner, carregamento sob demanda, navegação e arquivos (compactar → extract ida e volta), utilitários, o fluxo git inteiro com um remoto local, node, portas com um servidor HTTP de verdade, docker parado, `clean`/`upgrade`, energia, painéis, prompt e o `atualizar` com um repositório de mentira |
+| zsh | 264 | os mesmos casos (menos o `help cd`, que é do bash) |
+| PowerShell | 88 | o profile do Windows: helpers, arquivos, git, node, energia, painéis |
 
 Cada shell roda num HOME descartável e os comandos perigosos (`sudo`, `systemctl`, `shutdown`, `apt`…) são stubs que só anotam a chamada: os testes nunca desligam nem instalam nada. No [GitHub Actions](https://docs.github.com/actions) a suíte roda a cada push no Linux (com e sem as ferramentas opcionais), no macOS (zsh e bash 5) e no Windows (PowerShell 5.1 e 7), junto com o [ShellCheck](https://www.shellcheck.net/) e o [PSScriptAnalyzer](https://github.com/PowerShell/PSScriptAnalyzer).
 
@@ -316,7 +316,7 @@ Siga os passos do Linux dentro da distro. O `open`, o `clip`, as notificações 
 Ao abrir o terminal aparece o banner `◈  GROUND CONTROL` com a data, quanto ele levou pra abrir e a checagem do sistema (sistema, máquina, ferramentas e projetos), e o prompt em duas linhas:
 
 ```text
-[brian] at 08:48:12  ~/Documents/projetos/Pizzaria3Irmaos main
+[dev] at 08:48:12  ~/Documents/projetos/Pizzaria3Irmaos main
 $
 ```
 
@@ -336,7 +336,7 @@ Pra usar com outro nome, a pasta de projetos ou o tempo do `timebox`, coloque em
 - [x] Docker, rede, processos e utilitários de dev
 - [x] Zsh no Linux e no macOS com o mesmo código, PowerShell 5.1/7 no Windows e WSL
 - [x] Instaladores que podem rodar quantas vezes quiser
-- [x] 614 testes em bash, zsh e PowerShell, rodando no CI em Linux, macOS e Windows
+- [x] 617 testes em bash, zsh e PowerShell, rodando no CI em Linux, macOS e Windows
 
 ---
 

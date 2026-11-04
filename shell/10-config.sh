@@ -18,8 +18,8 @@ export TIMEBOX_MIN=30
 # Quem descobre o caminho é o próprio bashrc/zshrc, seguindo o atalho.
 export DOTFILES="${DOTFILES:-$HOME/dotfiles}"
 
-# O nome que aparece no começo do prompt: [brian] at 15:45:10 ...
-PROMPT_NOME="brian"
+# O nome que aparece no começo do prompt: [dev] at 15:45:10 ...
+PROMPT_NOME="dev"
 
 # As DOTFILES_* abaixo também aceitam vir do ambiente: DOTFILES_ANIM=0 bash
 # Animações (banner de boas-vindas, spinners). 0 = tudo estático.

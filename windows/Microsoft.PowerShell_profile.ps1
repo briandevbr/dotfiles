@@ -22,7 +22,7 @@ $Global:_DF_T0 = [Diagnostics.Stopwatch]::StartNew()
 $Global:DEV_HOME = Join-Path (Join-Path $HOME 'Documents') 'projetos'   # pasta dos projetos
 $Global:TIMEBOX_MIN = 30                                                # timebox padrão (min)
 $Global:DOTFILES = Join-Path $HOME 'dotfiles'                           # o repositório
-$Global:PROMPT_NOME = 'brian'                                           # o [brian] do prompt
+$Global:PROMPT_NOME = 'dev'                                             # o [dev] do prompt
 $Global:DOTFILES_ANIM = if ($env:DOTFILES_ANIM) { $env:DOTFILES_ANIM } else { '1' }          # 0 = sem animação
 $Global:DOTFILES_CONTAGEM = if ($env:DOTFILES_CONTAGEM) { [int]$env:DOTFILES_CONTAGEM } else { 5 }  # contagem antes de desligar
 $Global:DOTFILES_LENTO = 5                                              # segundos pra mostrar "⏱" no prompt
@@ -234,7 +234,7 @@ if (-not [Console]::IsOutputRedirected -and (Get-Module -ListAvailable PSReadLin
 }
 
 # ==========================================
-# PROMPT — igual ao do bash:  [brian] at 15:45:10  ~/pasta branch  ✗ 1  ⏱ 12s
+# PROMPT — igual ao do bash:  [dev] at 15:45:10  ~/pasta branch  ✗ 1  ⏱ 12s
 # A branch vem do .git/HEAD lido direto (sem chamar o git a cada Enter)
 # ==========================================
 function _branch_rapido {

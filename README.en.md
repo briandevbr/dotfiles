@@ -247,9 +247,9 @@ pwsh -NoProfile -File tests/casos.ps1     # PowerShell (on Windows: powershell -
 
 | Suite | Cases | What it covers |
 |---|---|---|
-| bash | 264 | helpers, spinner, on-demand loading, navigation and files (compactar → extract round trip), utilities, the whole git flow with a local remote, node, ports with a real HTTP server, docker stopped, `clean`/`upgrade`, power, panels, prompt and `atualizar` with a fake repository |
-| zsh | 263 | the same cases (except `help cd`, which is bash-only) |
-| PowerShell | 87 | the Windows profile: helpers, files, git, node, power, panels |
+| bash | 265 | helpers, spinner, on-demand loading, navigation and files (compactar → extract round trip), utilities, the whole git flow with a local remote, node, ports with a real HTTP server, docker stopped, `clean`/`upgrade`, power, panels, prompt and `atualizar` with a fake repository |
+| zsh | 264 | the same cases (except `help cd`, which is bash-only) |
+| PowerShell | 88 | the Windows profile: helpers, files, git, node, power, panels |
 
 Each shell runs in a throwaway HOME and the dangerous commands (`sudo`, `systemctl`, `shutdown`, `apt`…) are stubs that only log the call: the tests never power off or install anything. On [GitHub Actions](https://docs.github.com/actions) the suite runs on every push on Linux (with and without the optional tools), macOS (zsh and bash 5) and Windows (PowerShell 5.1 and 7), along with [ShellCheck](https://www.shellcheck.net/) and [PSScriptAnalyzer](https://github.com/PowerShell/PSScriptAnalyzer).
 
@@ -316,7 +316,7 @@ Follow the Linux steps inside the distro. `open`, `clip`, notifications and `pow
 When the terminal opens you get the `◈  GROUND CONTROL` banner with the date, how long it took to open and the system check (system, machine, tools and projects), and the two-line prompt:
 
 ```text
-[brian] at 08:48:12  ~/Documents/projetos/Pizzaria3Irmaos main
+[dev] at 08:48:12  ~/Documents/projetos/Pizzaria3Irmaos main
 $
 ```
 
@@ -336,7 +336,7 @@ To use another name, projects folder or `timebox` length, put it in `~/.config/d
 - [x] Docker, network, process and dev utilities
 - [x] Zsh on Linux and macOS with the same code, PowerShell 5.1/7 on Windows, and WSL
 - [x] Installers you can run as many times as you like
-- [x] 614 tests on bash, zsh and PowerShell, running in CI on Linux, macOS and Windows
+- [x] 617 tests on bash, zsh and PowerShell, running in CI on Linux, macOS and Windows
 
 ---
 

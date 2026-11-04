@@ -519,6 +519,7 @@ _t_tem "banner completo em todo terminal novo (não só no 1º do dia)" "arsenal
 # ==========================================
 _t_secao "prompt"
 # ==========================================
+_t_eq "nome padrão do prompt é [dev]" "dev" "$PROMPT_NOME"
 if [ "$T_SHELL" = bash ]; then
     false; _prompt_hook
     _t_eq "prompt marca o erro" "  ✗ 1" "$_PS1_ERRO"

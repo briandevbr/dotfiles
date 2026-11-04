@@ -98,7 +98,7 @@ unset _df_f _df_fzf _df_arq
 
 # ---------- PROMPT ----------
 # Mesmo prompt do bash:
-#   [brian] at 15:45:10  ~/pasta branch  ✗ erro  ⏱ 12s
+#   [dev] at 15:45:10  ~/pasta branch  ✗ erro  ⏱ 12s
 #   $
 _df_precmd() {
     local st=$? d

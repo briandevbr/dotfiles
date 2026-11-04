@@ -1,7 +1,7 @@
 # shellcheck shell=bash
 # ==========================================
 # PALETA — as mesmas cores vivas do prompt, no terminal inteiro
-# 39  = azul vivo     (accent: títulos, "uso")       ← [brian]
+# 39  = azul vivo     (accent: títulos, "uso")       ← [dev]
 # 141 = lilás         (seções dos painéis)           ← hora
 # 51  = ciano         (nome dos comandos nos painéis) ← pasta
 # 214 = laranja       (alerta, branch, comando original) ← branch

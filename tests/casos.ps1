@@ -115,6 +115,7 @@ _t_tem 'gc' 'commit criado' (_t_saida { gc primeiro commit })
 _t_eq 'gc junta a mensagem' 'primeiro commit' (git log -1 --format=%s)
 _t_eq 'branch rápida' 'main' (_branch_rapido)
 _t_tem 'prompt mostra a branch' 'main' (prompt)
+_t_tem 'nome padrão do prompt é [dev]' '[dev]' (prompt)
 _t_tem 'gp publica' 'branch publicada' (_t_saida { gp })
 _t_tem 'gp sem nada' 'nada pra enviar' (_t_saida { gp })
 Add-Content a.txt 'dois'; Set-Content b.txt 'novo'
