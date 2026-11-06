@@ -1,9 +1,9 @@
 # shellcheck shell=bash
 # ==========================================
 # ENERGIA — desligar, reiniciar e suspender com segurança
-#   poweroff [-y] [minutos | cancelar]     (ou: desligar)
-#   reboot   [-y] [minutos | cancelar]     (ou: reiniciar)
-#   suspend  [-y]                          (ou: suspender)
+#   desligar  [-y] [minutos | cancelar]    (ou: poweroff)
+#   reiniciar [-y] [minutos | cancelar]    (ou: reboot)
+#   suspender [-y]                         (ou: suspend)
 #
 # Antes de qualquer coisa:
 #   1. confere o que pode se perder: programas rodando neste terminal,
@@ -14,20 +14,21 @@
 #   4. contagem regressiva — Ctrl+C ainda cancela
 # Linux usa systemctl; macOS usa o próprio sistema (os apps pedem pra salvar);
 # no WSL quem desliga é o Windows.
+# Os nomes em inglês continuam valendo, com a mesma proteção: sem eles, poweroff
+# e reboot chamariam direto os do sistema, que desligam sem perguntar nada.
 # O comando original continua lá: sudo poweroff / command reboot.
 # ==========================================
 
-poweroff()  { _energia desligar "$@"; }
-reboot()    { _energia reiniciar "$@"; }
-suspend()   { _energia suspender "$@"; }
 desligar()  { _energia desligar "$@"; }
 reiniciar() { _energia reiniciar "$@"; }
 suspender() { _energia suspender "$@"; }
+poweroff()  { _energia desligar "$@"; }
+reboot()    { _energia reiniciar "$@"; }
+suspend()   { _energia suspender "$@"; }
 
 _energia() {
-    local acao="$1" sim=0 minutos="" cancelar=0 cmd
+    local acao="$1" sim=0 minutos="" cancelar=0 cmd="$1"   # cmd: o nome que as dicas mostram
     shift
-    case "$acao" in desligar) cmd=poweroff ;; reiniciar) cmd=reboot ;; *) cmd=suspend ;; esac
     while [ $# -gt 0 ]; do
         case "$1" in
             -y|--sim)           sim=1 ;;
@@ -42,7 +43,7 @@ _energia() {
         shift
     done
     if [ "$acao" = suspender ] && { [ -n "$minutos" ] || [ "$cancelar" -eq 1 ]; }; then
-        _err "suspender não tem agendamento" "use só: suspend"
+        _err "suspender não tem agendamento" "use só: suspender"
         return 1
     fi
 

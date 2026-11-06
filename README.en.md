@@ -51,7 +51,7 @@ The terminal I use every day on Pop!_OS, now also on zsh (Linux and macOS) and P
 | `shell/modulos/git.sh` | The 34 git shortcuts (`gs`, `gac`, `gcm`, `gp`, `gup`, `gpr`…) and the `gd`/`gds` interface |
 | `shell/modulos/navegacao.sh` | `open`, `mkcd`, `up`, `cdr`, `proj`, `extract`, `compactar`, `bak`, `lixo`, `espaco`, `cpv`, `ff` |
 | `shell/modulos/sistema.sh` | `clean` (deep cleanup with a report), `upgrade`, `rmpkg`, `rmapp`, `bkp`, `timebox`, `atualizar`, `tela` |
-| `shell/modulos/energia.sh` | `poweroff`, `reboot` and `suspend` with checks, a preventive log and a countdown |
+| `shell/modulos/energia.sh` | `desligar`, `reiniciar` and `suspender` (or `poweroff`, `reboot`, `suspend`) with checks, a preventive log and a countdown |
 | `shell/modulos/rede.sh` | `port`, `portas`, `serve`, `waitport`, `httpcheck`, `meuip`, `rede`, `psg`, `pk`, `topcpu`, `topmem`, `mon` |
 | `shell/modulos/docker.sh` | `dps`, `dlog`, `dsh`, `dstop`, `drm`, `dclean`, `dstats` and compose (`dc`, `dcu`, `dcd`, `dcl`, `dcr`) |
 | `shell/modulos/node.sh` | `ni`, `nr`, `nrd`, `nrb`, `ns`, `nt`, `nid`, `nfresh`, `nout`, `npkg` — they use pnpm/yarn/bun when the project has their lockfile |
@@ -136,7 +136,7 @@ In a regular terminal you have to memorize long commands, and the answers come i
 - **Interface** — answers use the same colors as the prompt: green ✓ when it worked, red ✗ when it didn't, with a hint on how to fix it right below. Slow operations show a spinner with a running timer; cleanup and upgrades show a progress bar per step. The prompt shows the time, the folder, the git branch, warns you when the last command failed and how long a slow command took (`⏱ 12s`). In several commands, if you don't type a file, branch or container name, a searchable list with preview opens.
 - **Productivity** — short shortcuts do the work of long commands: `gac "message"` does the same as `git add --all && git commit -m "message"`, and `gcm feat:login adds button` builds the commit in the Conventional Commits format (on its own, `gcm` shows each type, when to use it and an example). Swapped letters by accident, like `gti`? It suggests the right command. And `atualizar` brings the terminal to its newest version with a single word.
 - **Performance** — the terminal opens in ~33ms on bash and ~23ms on zsh, already drawing the full banner (the old `bashrc` took ~29ms, with half the commands and a simple banner). Commands are only read the first time you use one of them, the prompt reads the branch without starting git, and the tools don't run on every terminal: their `init` output is cached.
-- **Safety** — `poweroff`, `reboot` and `suspend` first check what could be lost (running programs, projects with changes outside git, an installation in progress), ask, save a log and still give you a 5-second countdown that Ctrl+C cancels. `clean -n` shows how much can be freed without deleting anything.
+- **Safety** — `desligar`, `reiniciar` and `suspender` (Portuguese for poweroff, reboot and suspend; the English names work too) first check what could be lost (running programs, projects with changes outside git, an installation in progress), ask, save a log and still give you a 5-second countdown that Ctrl+C cancels. `clean -n` shows how much can be freed without deleting anything.
 
 ### Forgot a command? Use `dev` and `help`
 
@@ -182,7 +182,7 @@ $ gcm feat:login adiciona botão de entrar
 Powering off checks what could be lost first:
 
 ```text
-$ poweroff
+$ desligar
   ⏻  desligar o computador  ligado há 1h12
   !  1 projeto com mudanças fora do git
      ↳ loja
@@ -247,9 +247,9 @@ pwsh -NoProfile -File tests/casos.ps1     # PowerShell (on Windows: powershell -
 
 | Suite | Cases | What it covers |
 |---|---|---|
-| bash | 265 | helpers, spinner, on-demand loading, navigation and files (compactar → extract round trip), utilities, the whole git flow with a local remote, node, ports with a real HTTP server, docker stopped, `clean`/`upgrade`, power, panels, prompt and `atualizar` with a fake repository |
-| zsh | 264 | the same cases (except `help cd`, which is bash-only) |
-| PowerShell | 88 | the Windows profile: helpers, files, git, node, power, panels |
+| bash | 267 | helpers, spinner, on-demand loading, navigation and files (compactar → extract round trip), utilities, the whole git flow with a local remote, node, ports with a real HTTP server, docker stopped, `clean`/`upgrade`, power, panels, prompt and `atualizar` with a fake repository |
+| zsh | 266 | the same cases (except `help cd`, which is bash-only) |
+| PowerShell | 89 | the Windows profile: helpers, files, git, node, power, panels |
 
 Each shell runs in a throwaway HOME and the dangerous commands (`sudo`, `systemctl`, `shutdown`, `apt`…) are stubs that only log the call: the tests never power off or install anything. On [GitHub Actions](https://docs.github.com/actions) the suite runs on every push on Linux (with and without the optional tools), macOS (zsh and bash 5) and Windows (PowerShell 5.1 and 7), along with [ShellCheck](https://www.shellcheck.net/) and [PSScriptAnalyzer](https://github.com/PowerShell/PSScriptAnalyzer).
 
@@ -311,7 +311,7 @@ Rather copy and paste? Open the profile with `notepad $PROFILE`, paste the conte
 
 ### WSL
 
-Follow the Linux steps inside the distro. `open`, `clip`, notifications and `poweroff` talk to Windows (`poweroff` shuts down the whole Windows, and says so first).
+Follow the Linux steps inside the distro. `open`, `clip`, notifications and `desligar` talk to Windows (`desligar` shuts down the whole Windows, and says so first).
 
 When the terminal opens you get the `◈  GROUND CONTROL` banner with the date, how long it took to open and the system check (system, machine, tools and projects), and the two-line prompt:
 
@@ -330,13 +330,13 @@ To use another name, projects folder or `timebox` length, put it in `~/.config/d
 - [x] The 68 original commands preserved — 131 in total
 - [x] On-demand loading: bash opens in ~33ms and zsh in ~23ms, with the full banner
 - [x] Visual feedback: ✓/✗ with hints, spinner, progress bar and the full banner on every terminal (animated on the first one of the day)
-- [x] `poweroff`, `reboot` and `suspend` with checks, preventive log, countdown and scheduling
+- [x] `desligar`, `reiniciar` and `suspender` (also `poweroff`, `reboot`, `suspend`) with checks, preventive log, countdown and scheduling
 - [x] Deep `clean` (apt, pacman, dnf, flatpak, snap, brew, npm, pip, logs and temp files) with a report and dry run; `upgrade`
 - [x] Git with Conventional Commits (`gcm`), PR in the browser (`gpr`), `gup`, `gbr`, `gwip`
 - [x] Docker, network, process and dev utilities
 - [x] Zsh on Linux and macOS with the same code, PowerShell 5.1/7 on Windows, and WSL
 - [x] Installers you can run as many times as you like
-- [x] 617 tests on bash, zsh and PowerShell, running in CI on Linux, macOS and Windows
+- [x] 622 tests on bash, zsh and PowerShell, running in CI on Linux, macOS and Windows
 
 ---
 

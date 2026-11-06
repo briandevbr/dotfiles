@@ -186,6 +186,7 @@ $Global:T_LOG.Clear(); $null = _t_saida { reboot -y }
 _t_tem 'reboot -y' $(if ($Global:_DF_WINDOWS) { 'Restart-Computer' } else { 'systemctl reboot' }) ($Global:T_LOG -join ';')
 $Global:T_LOG.Clear(); $null = _t_saida { suspend -y }
 _t_tem 'suspend -y' $(if ($Global:_DF_WINDOWS) { 'suspender' } else { 'systemctl suspend' }) ($Global:T_LOG -join ';')
+_t_tem 'dev energia mostra os nomes em português' 'reiniciar' (_t_saida { dev energia })
 $Global:T_LOG.Clear(); $null = _t_saida { poweroff -y 30 }
 _t_tem 'poweroff agendado' $(if ($Global:_DF_WINDOWS) { 'shutdown.exe /s /t 1800' } else { 'shutdown -h +30' }) ($Global:T_LOG -join ';')
 _t_tem 'suspend não agenda' 'não tem agendamento' (_t_saida { suspend 10 })

@@ -399,16 +399,16 @@ _dev_secao() {
             ;;
         energia)
             _secao "energia"
-            _linha "poweroff"      "desliga — confere o que tá pendente, pergunta e conta 5s"
+            _linha "desligar"      "desliga — confere o que tá pendente, pergunta e conta 5s"
             _eq    "systemctl poweroff"
-            _linha "reboot"        "reinicia, com as mesmas checagens"
+            _linha "reiniciar"     "reinicia, com as mesmas checagens"
             _eq    "systemctl reboot"
-            _linha "suspend"       "suspende (dorme) — acorda onde parou"
+            _linha "suspender"     "suspende (dorme) — acorda onde parou"
             _eq    "systemctl suspend"
-            _linha "poweroff 30"   "agenda pra daqui a 30 min · poweroff cancelar desfaz"
+            _linha "desligar 30"   "agenda pra daqui a 30 min · desligar cancelar desfaz"
             _eq    "shutdown -h +30  ·  shutdown -c"
             _linha "-y"            "pula a pergunta (a contagem com Ctrl+C continua)"
-            printf "  ${C_DIM}também em português: desligar · reiniciar · suspender${C_OFF}\n"
+            printf "  ${C_DIM}também em inglês, com a mesma proteção: poweroff · reboot · suspend${C_OFF}\n"
             printf "  ${C_DIM}antes de desligar salva um log em %s${C_OFF}\n" "$(_curto "$DOTFILES_ESTADO/energia")"
             ;;
         terminal)
@@ -551,7 +551,7 @@ _help_secao() {
             _linha "lsblk"                   "discos, pendrives e partições"
             _linha "systemctl status x"      "estado de um serviço"
             _linha "sudo journalctl -f"      "logs do sistema ao vivo"
-            _linha "reboot · poweroff"       "reinicia · desliga (aqui pedem confirmação: dev energia)"
+            _linha "reboot · poweroff"       "reinicia · desliga (aqui pedem confirmação, iguais ao reiniciar e desligar)"
             ;;
         pacotes)
             _secao "pacotes"

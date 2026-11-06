@@ -477,6 +477,8 @@ _t_nao "poweroff com opção errada = uso" poweroff --bobagem
 : > "$STUB_LOG"
 desligar <<< n > /dev/null 2>&1
 _t_nao_tem "desligar (português) também pergunta" "$t_off" "$(cat "$STUB_LOG")"
+_t_tem "agendar sugere cancelar em português" "desligar cancelar" "$(desligar -y 30 2>&1 | _t_limpo)"
+_t_tem "dev energia mostra os nomes em português" "reiniciar" "$(dev energia 2>&1 | _t_limpo)"
 mkdir -p "$DEV_HOME/sujo" && ( builtin cd "$DEV_HOME/sujo" && git init -q && printf 'x\n' > x )
 saida=$(poweroff <<< n 2>&1 | _t_limpo)
 _t_tem "poweroff avisa projeto com mudanças" "sujo" "$saida"

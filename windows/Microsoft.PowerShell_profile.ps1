@@ -3,7 +3,7 @@
 # Windows PowerShell 5.1 e PowerShell 7+ (Windows, e também pwsh no Linux/macOS)
 #
 # O mesmo terminal do bash/zsh — mesmo prompt, mesmas cores, mesmos atalhos
-# (gs, gac, gp, proj, clean, poweroff, dev, help…) — com o jeito do Windows
+# (gs, gac, gp, proj, clean, desligar, dev, help…) — com o jeito do Windows
 # por baixo (winget, Lixeira, Stop-Computer, Get-NetTCPConnection…).
 #
 # Instalação: windows\install.ps1 (faz o $PROFILE carregar este arquivo).
@@ -1129,23 +1129,24 @@ function atualizar {
 }
 
 # ==========================================
-# ENERGIA — poweroff / reboot / suspend com checagem, log e contagem
+# ENERGIA — desligar / reiniciar / suspender com checagem, log e contagem
+# (em inglês também: poweroff / reboot / suspend, com a mesma proteção)
 # (os originais continuam: Stop-Computer, Restart-Computer, shutdown.exe)
 # ==========================================
-function poweroff { _energia desligar @args }
-function reboot { _energia reiniciar @args }
-function suspend { _energia suspender @args }
 function desligar { _energia desligar @args }
 function reiniciar { _energia reiniciar @args }
 function suspender { _energia suspender @args }
+function poweroff { _energia desligar @args }
+function reboot { _energia reiniciar @args }
+function suspend { _energia suspender @args }
 function _suspender_windows { Add-Type -AssemblyName System.Windows.Forms; $null = [System.Windows.Forms.Application]::SetSuspendState('Suspend', $false, $false) }
 function _energia([string]$acao) {
     $resto = @($args); $sim = $resto -contains '-y'; $cancelar = $resto -contains 'cancelar'
     $min = $resto | Where-Object { "$_" -match '^\d{1,3}$' } | Select-Object -First 1
-    $cmd = @{ desligar = 'poweroff'; reiniciar = 'reboot'; suspender = 'suspend' }[$acao]
+    $cmd = $acao   # o nome que as dicas mostram
     $estranho = $resto | Where-Object { $_ -ne '-y' -and $_ -ne 'cancelar' -and "$_" -notmatch '^\d{1,3}$' }
     if ($estranho) { _uso "$cmd [-y] [minutos | cancelar]" '-y pula a pergunta · minutos agenda · cancelar desfaz o agendamento'; return }
-    if ($acao -eq 'suspender' -and ($min -or $cancelar)) { _err 'suspender não tem agendamento' 'use só: suspend'; return }
+    if ($acao -eq 'suspender' -and ($min -or $cancelar)) { _err 'suspender não tem agendamento' 'use só: suspender'; return }
     if ($cancelar) {
         if ($Global:_DF_WINDOWS) { shutdown.exe /a 2>$null } else { shutdown -c 2>$null }
         _ok 'agendamento cancelado' 'o computador continua ligado'; return
@@ -1248,7 +1249,7 @@ function _dev_secao([string]$s) {
         'rede' { _secao 'rede'; _linha 'rede' 'diagnóstico: DNS, internet, latência'; _linha 'meuip' 'IP local e público'; _linha 'portas · httpcheck' 'portas abertas · teste de URL' }
         'processos' { _secao 'processos'; _linha 'psg nome' 'acha processos'; _linha 'pk [nome]' 'escolhe e encerra'; _eq 'Stop-Process'; _linha 'topcpu · topmem' 'os que mais gastam'; _linha 'mon' 'monitor (btop, htop ou Gerenciador)' }
         'sistema' { _secao 'sistema'; _linha 'limpar [-n]' 'limpeza: temporários, caches (npm, pip, scoop)'; _eq 'no PowerShell 5.1 também: clean'; _linha 'upgrade' 'atualiza tudo: winget, scoop, choco'; _eq 'winget upgrade --all'; _linha 'bkp' 'backup do profile, .gitconfig, VS Code e Terminal'; _linha 'lspkg · rmpkg' 'lista · remove programas'; _linha 'atualizar' 'baixa a versão nova destes dotfiles' }
-        'energia' { _secao 'energia'; _linha 'poweroff' 'desliga — checa pendências, pergunta e conta 5s'; _eq 'Stop-Computer'; _linha 'reboot' 'reinicia'; _eq 'Restart-Computer'; _linha 'suspend' 'suspende'; _linha 'poweroff 30' 'agenda · poweroff cancelar desfaz'; _eq 'shutdown.exe /s /t 1800 · /a'; _linha '-y' 'pula a pergunta' }
+        'energia' { _secao 'energia'; _linha 'desligar' 'desliga — checa pendências, pergunta e conta 5s'; _eq 'Stop-Computer'; _linha 'reiniciar' 'reinicia'; _eq 'Restart-Computer'; _linha 'suspender' 'suspende'; _linha 'desligar 30' 'agenda · desligar cancelar desfaz'; _eq 'shutdown.exe /s /t 1800 · /a'; _linha '-y' 'pula a pergunta'; _w "  ${C_DIM}também em inglês, com a mesma proteção: poweroff · reboot · suspend${C_OFF}`n" }
         default { return $false }
     }
     return $true

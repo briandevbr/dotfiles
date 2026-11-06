@@ -304,7 +304,7 @@ upgrade() {
     else
         _aviso "$(_plural "$falhas" "etapa falhou" "etapas falharam")" "rode de novo: upgrade"
     fi
-    [ -f /var/run/reboot-required ] && _aviso "o sistema pede reinício pra terminar a atualização" "quando puder: reboot"
+    [ -f /var/run/reboot-required ] && _aviso "o sistema pede reinício pra terminar a atualização" "quando puder: reiniciar"
     mkdir -p "$DOTFILES_ESTADO" 2> /dev/null &&
         printf '%s  upgrade  %s falhas\n' "$(_data '%Y-%m-%d %H:%M:%S')" "$falhas" >> "$DOTFILES_ESTADO/manutencao.log"
     [ "$falhas" -eq 0 ]
